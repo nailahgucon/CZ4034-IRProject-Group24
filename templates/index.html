@@ -1,0 +1,37 @@
+{% extends 'base.html'%}
+
+{% block head %}
+<title>Tripadvisor Master</title>
+{% endblock%}
+
+{% block body %}
+<div class="content">
+  <h1 style="text-align: center">Tripadvisor Master</h1>
+  <div class="form">
+    <form action="/query" method="GET">
+      <input type="text" name="content" id="content">
+      <input type="submit" value="Send">
+    </form>
+  </div>
+
+  <table>
+    <tr>
+        <th>DateOfReview</th>
+        <th>Rating</th>
+        <th>Title</th>
+        <th>Review</th>
+    </tr>
+    {% for i in docs %}
+        <tr>
+            <td>{{ i.DateOfReview }}</td>
+            <td>{{ i.Rating }}</td>
+            <td>{{ i.Title }}</td>
+            <td>{{ i.Review }}</td>
+            
+        </tr>
+    {% endfor %}
+</table>
+
+
+</div>
+{% endblock%}
