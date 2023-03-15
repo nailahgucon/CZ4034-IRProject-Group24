@@ -1,5 +1,6 @@
 import json
-from flask import Flask, render_template, url_for, request
+from flask import Flask, render_template, request
+from datetime import datetime
 import requests
 
 app = Flask(__name__)
@@ -8,6 +9,7 @@ class records():
     docs = None
     @classmethod
     def store(cls, docs):
+      print("document ", docs[0]["Title"][0])
       cls.docs = docs
     
     def filterByRating(self, rating):
@@ -20,7 +22,14 @@ class records():
     def filterByDate(self, date):
       result = []
       for i in self.docs:
-        if i["DateOfReview"] == date:
+        if i["DateOfReview"][0] == date:
+          result.append(i)
+      return result
+    
+    def filterByDateAndRating(self,date,rating):
+      result = []
+      for i in self.docs:
+        if i["DateOfReview"] == date and i["Rating"] == rating:
           result.append(i)
       return result
     
@@ -46,6 +55,9 @@ def index():
   
   # Parse Solr results
   results = json.loads(response.text)["response"]["docs"]
+
+  myRcords = records()
+  myRcords.store(results)
 
   return render_template('index.html', docs=results)
 
@@ -79,10 +91,29 @@ def query():
 @app.route('/filter', methods=['GET'])
 def filter():
   if request.method == 'GET':
-    query = request.values.get("content").replace(" ","%20")
+
     myRecords = records()
-    # filter the existing data
-    return render_template('index.html')
+    rating_filter = request.values.get('rating')
+    formatted_rating = None
+    if rating_filter:
+      formatted_rating = int(rating_filter[0])
+
+    date_filter = request.values.get('date')
+    formatted_date = None
+    if date_filter:
+      date_obj = datetime.strptime(date_filter, '%Y-%m-%d')
+      formatted_date = date_obj.strftime('%B %d, %Y')
+
+    if formatted_rating and formatted_date:
+      result = myRecords.filterByDateAndRating(formatted_date, formatted_rating)
+    elif formatted_rating:
+      result = myRecords.filterByRating(formatted_rating)
+    elif formatted_date:
+      result = myRecords.filterByDate(formatted_date)   
+    else:
+      result = myRecords.getAllRecords() 
+    
+    return render_template('index.html', docs = result)
   else:
     return render_template('index.html')
 

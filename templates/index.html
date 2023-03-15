@@ -10,8 +10,31 @@
   <div class="form">
     <form action="/query" method="GET">
       <input type="text" name="content" id="content">
+
       <input type="submit" value="Send">
     </form>
+  </div>
+
+  <div class="content">
+    <div class="form">
+      <form action="/filter" method="GET">
+        <label for="date">Filter by Date:</label>
+        <input type="date" id="date" name="date">
+        <br><br>
+        <label for="rating">Filter by Rating:</label>
+        <select id="rating" name="rating">
+          <option value="">Select a rating</option>
+          <option value="1">1 star</option>
+          <option value="2">2 stars</option>
+          <option value="3">3 stars</option>
+          <option value="4">4 stars</option>
+          <option value="5">5 stars</option>
+        </select>
+        <br><br>
+        <input type="submit" value="Apply Filters">
+        <button type="button" onclick="redirect()">Clear Filters</button>
+      </form>
+    </div>
   </div>
 
   <table>
@@ -23,15 +46,23 @@
     </tr>
     {% for i in docs %}
         <tr>
-            <td>{{ i.DateOfReview }}</td>
+            <td>{{ i.DateOfReview[0] }}</td>
             <td>{{ i.Rating }}</td>
-            <td>{{ i.Title }}</td>
-            <td>{{ i.Review }}</td>
+            <td>{{ i.Title[0] }}</td>
+            <td>{{ i.Review[0] }}</td>
             
         </tr>
     {% endfor %}
-</table>
+  </table>
 
 
 </div>
+
+<script>
+  
+  function redirect() {
+    window.location.href = "/";
+  }
+  
+</script>
 {% endblock%}
