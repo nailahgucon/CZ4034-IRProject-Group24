@@ -46,6 +46,9 @@ def index():
       "fq": f"{filed}:{queryContent}",
       "rows": 10,
       "start": 0,
+      "spellcheck.build": "true",
+      "spellcheck.reload": "true",
+      "spellcheck": "true",
       "wt": "json"
   }
   URL = "http://localhost:8983/solr/reviews/select"
@@ -73,7 +76,10 @@ def query():
         "fq": f"{filed}:{queryContent}",
         "rows": 10,
         "start": 0,
-        "wt": "json"
+        "spellcheck.build": "true",
+        "spellcheck.reload": "true",
+        "spellcheck": "true",
+        "wt": "json",
     }
     URL = "http://localhost:8983/solr/reviews/select"
     
