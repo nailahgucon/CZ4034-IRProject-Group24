@@ -19,17 +19,20 @@ class records():
           result.append(i)
       return result
     
-    def filterByDate(self, date):
+    def filterByDate(self, start_date, end_date):
       result = []
       for i in self.docs:
-        if i["DateOfReview"][0] == date:
+        date = datetime.strptime(i["DateOfReview"][0], '%B %d, %Y')
+        
+        if date >= start_date and date <= end_date:
           result.append(i)
       return result
     
-    def filterByDateAndRating(self,date,rating):
+    def filterByDateAndRating(self,start_date, end_date,rating):
       result = []
       for i in self.docs:
-        if i["DateOfReview"] == date and i["Rating"] == rating:
+        date = datetime.strptime(i["DateOfReview"][0], '%B %d, %Y')
+        if date >= start_date and date <= end_date and i["Rating"] == rating:
           result.append(i)
       return result
     
@@ -98,18 +101,23 @@ def filter():
     if rating_filter:
       formatted_rating = int(rating_filter[0])
 
-    date_filter = request.values.get('date')
-    formatted_date = None
-    if date_filter:
-      date_obj = datetime.strptime(date_filter, '%Y-%m-%d')
-      formatted_date = date_obj.strftime('%B %d, %Y')
+    start_date_filter = request.values.get('startDate')
+    end_date_filter = request.values.get('endDate')
+    formatted_start_date = None
+    formatted_end_date = None
 
-    if formatted_rating and formatted_date:
-      result = myRecords.filterByDateAndRating(formatted_date, formatted_rating)
+    if start_date_filter and end_date_filter:
+      start_date_obj = datetime.strptime(start_date_filter, '%Y-%m-%d')
+      end_date_obj = datetime.strptime(end_date_filter, '%Y-%m-%d')
+      formatted_start_date = datetime.strptime(start_date_obj.strftime('%B %d, %Y'), '%B %d, %Y')
+      formatted_end_date = datetime.strptime(end_date_obj.strftime('%B %d, %Y'), '%B %d, %Y')
+
+    if formatted_rating and formatted_start_date and formatted_end_date:
+      result = myRecords.filterByDateAndRating(formatted_start_date, formatted_end_date, formatted_rating)
     elif formatted_rating:
       result = myRecords.filterByRating(formatted_rating)
-    elif formatted_date:
-      result = myRecords.filterByDate(formatted_date)   
+    elif formatted_start_date and formatted_end_date:
+      result = myRecords.filterByDate(formatted_start_date, formatted_end_date)   
     else:
       result = myRecords.getAllRecords() 
     
