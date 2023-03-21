@@ -3,6 +3,10 @@ from flask import Flask, render_template, request
 from datetime import datetime
 import requests
 
+from spellcheck import spellcheck
+from mlt import mlt
+from autocomplete import autocomplete
+
 app = Flask(__name__)
 
 class records():
@@ -88,15 +92,32 @@ def query():
     
     # Send Solr query
     response = requests.get(URL, params=query)
+
+    # check results for typos
+    res = {}
+    spellcheck_list = results.get("spellcheck").get("collations")
+    if spellcheck_list:
+        correct_terms, typo_terms = spellcheck(spellcheck_list)
+        for correct_term in correct_terms:
+            res2 = query(col_name, correct_term, server, **kwargs)
+            res.update(res2)
+    else:
+        res.update(results)
     
+    # check results for suggestions
+    suggtexts = autocomplete(results)
+
     # Parse Solr results
     results = json.loads(response.text)["response"]["docs"]
+    
+
     myRcords = records()
     myRcords.store(results)
     return render_template('index.html', docs=results)
   else:
     return render_template('index.html')
   
+
 @app.route('/filter', methods=['GET'])
 def filter():
   if request.method == 'GET':

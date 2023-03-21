@@ -8,7 +8,7 @@ def autocomplete(res: Dict[str]) -> List[str]:
     autocompletes the query by offering suggestions
     res: response result dictionary
     '''
-    suggested = res.get("response").get("docs")
+    # suggested = res.get("response").get("docs")
     if suggested:
         suggtexts = []
         for suggestion in suggested:

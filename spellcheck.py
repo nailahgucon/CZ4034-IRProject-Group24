@@ -1,12 +1,12 @@
-from typing import Dict, Tuple
+from typing import List, Tuple
 
 # only after query completion
-def spellcheck(res: Dict[str]) -> Tuple[bool, str, str]:
+def spellcheck(res: List[str]) -> Tuple[bool, str, str]:
     '''
     if there was a typo in query
     res: dictionary response 
     '''
-    spellcheck_list = results.get("spellcheck").get("collations")
+    # spellcheck_list = results.get("spellcheck").get("collations")
     correct_terms = []
     typo_terms = []
     for correction in spellcheck_list:
