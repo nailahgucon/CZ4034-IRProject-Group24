@@ -10,7 +10,7 @@ solr start -c
 ## Create core/database
 solr create -c *Name_of_database*
  >> Create with configset
-bin/solr create -c reviews -d reviews_configs
+bin/solr create -c reviews -d reviews
 
 ## Upload data
-bin/solr delete -c reviews
+bin/post -c reviews data
