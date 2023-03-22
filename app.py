@@ -3,7 +3,30 @@ from flask import Flask, render_template, request
 from datetime import datetime
 import requests
 
+from spellcheck import spellcheck
+from mlt import mlt
+from autocomplete import autocomplete
+
 app = Flask(__name__)
+
+# test query
+
+server:str = "http://localhost:8983/solr/reviews/select"
+col_name:str = "spellCheck"  # or any other copyfields
+query_term:str = "Sparrow"
+mlt_field = "Type"
+kwargs = {'spellcheck.build': "true",
+          'spellcheck.reload': "true",
+          'spellcheck': 'true',
+          'mlt':'true',
+          'mlt.fl': mlt_field,
+          'mlt.interestingTerms':'details',
+          'mlt.match.include': 'false',
+          'mlt.mintf': '0',
+          'mlt.mindf': '0',
+          }
+
+mlt_url = "http://localhost:8983/solr/reviews/mlt"
 
 class records():
     docs = None
@@ -49,6 +72,10 @@ def index():
       "fq": f"{filed}:{queryContent}",
       "rows": 10,
       "start": 0,
+      "mlt":"true",
+      "spellcheck.build": "true",
+      "spellcheck.reload": "true",
+      "spellcheck": "true",
       "wt": "json"
   }
   URL = "http://localhost:8983/solr/reviews/select"
@@ -62,35 +89,65 @@ def index():
   myRcords = records()
   myRcords.store(results)
 
-  return render_template('index.html', docs=results)
+  return "nice" #render_template('index.html', docs=results)
 
-@app.route('/query', methods=['GET'])
+@app.route('/query', methods=['GET', 'POST'])
 def query():
   if request.method == 'GET':
-    queryContent = request.values.get("content").replace(" ","%20")
-    filed = "Review"
+    # queryContent = request.values.get("content").replace(" ","%20")
+    # filed = "Review"
+    user_query = f"{col_name}:{query_term}"
+    kwargs.update({"q": user_query})
 
-    # Build Solr query
-    query = {
-        "q": "*:*",
-        "fq": f"{filed}:{queryContent}",
-        "rows": 10,
-        "start": 0,
-        "wt": "json"
-    }
-    URL = "http://localhost:8983/solr/reviews/select"
+    '''
+    example of kwargs(additional params on top of query):
+    {'spellcheck.build': "true",
+     'spellcheck.reload': "true",
+     'spellcheck': "true"}
+    '''
+    response = requests.get(server,
+                           params=kwargs)
+
     
-    # Send Solr query
-    response = requests.get(URL, params=query)
+    results = json.loads(response.text)
     
+    # check results for typos
+    spellcheck_list = results.get("spellcheck").get("collations")
+    if spellcheck_list:
+        correct_terms, typo_terms, collation_queries = spellcheck(spellcheck_list)
+        print("Are these what you mean?")
+        # if more than 1 correct terms
+        for terms in collation_queries:
+          term_ = terms.split('\n')
+          # takes the odd indices
+          term = ' '.join([
+            term_[i] for i in range(len(term_))
+            if i % 2 == 1])
+          print(term)
+          # # can re-query
+          # res2 = query(col_name, correct_term, server, **kwargs)
+          # res.update(res2)
+    # else:
+    #     typo_res.update(results)
+    
+    # check results for suggestions
+    suggtexts = autocomplete(results)
+    print(f"Your query is {query_term}, are you looking for {suggtexts}?")
+
+    # more like this
+    out = mlt(results)
+    print(f"output for more like this is {out}")
+
     # Parse Solr results
     results = json.loads(response.text)["response"]["docs"]
+
     myRcords = records()
     myRcords.store(results)
     return render_template('index.html', docs=results)
   else:
     return render_template('index.html')
   
+
 @app.route('/filter', methods=['GET'])
 def filter():
   if request.method == 'GET':
