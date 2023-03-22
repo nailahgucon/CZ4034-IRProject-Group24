@@ -64,13 +64,12 @@ class records():
 
 @app.route('/', methods=['GET'])
 def index():
-  queryContent = "*"
-  filed = "*"
+
   # Build Solr query
   query = {
       "q": "*:*",
-      "fq": f"{filed}:{queryContent}",
-      "rows": 10,
+      "fq": "*:*",
+      "rows": 100000,
       "start": 0,
       "mlt":"true",
       "spellcheck.build": "true",
@@ -89,7 +88,8 @@ def index():
   myRcords = records()
   myRcords.store(results)
 
-  return "nice" #render_template('index.html', docs=results)
+  # return "nice" 
+  render_template('index.html', docs=results)
 
 @app.route('/query', methods=['GET', 'POST'])
 def query():
