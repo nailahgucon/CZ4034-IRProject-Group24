@@ -3,6 +3,12 @@
 {% block content %}
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
   <h1>Results</h1>
+  {% if suggtexts %}
+  <form id="spellCorrection" action="/query" method="GET">
+    <input type="hidden" name="content" value={{ suggtexts }}>
+    <span>Do you want to seach <a onclick="submit()">{{ suggtexts }}</a> instead?</span>
+  </form>
+  {% endif %}
 </div>
 <div class="form">
   <form action="/filter" method="GET" style="
@@ -143,7 +149,11 @@
   function resetFilter() {
     window.location.href = "/pagination?page=1";
   }
-  
+
+  function submit(){
+    document.getElementById("spellCorrection").submit();
+  }
+
 </script>
 
 {% endblock %}

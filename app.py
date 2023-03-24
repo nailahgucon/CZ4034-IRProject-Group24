@@ -61,6 +61,8 @@ def home():
 @app.route('/query', methods=['GET'])
 def query():
   if request.method == 'GET':
+
+    # bellow is the query to solr. 
     query_term = request.values.get("content").replace(" ","%20")
     filed = "Review"
     # Build Solr query
@@ -128,6 +130,8 @@ def query():
     # # Parse Solr results
     # results = json.loads(response.text)["response"]["docs"]
 
+    suggtexts = "check"
+
 
     # save the results to records class
     myRecords = records.records()
@@ -136,6 +140,7 @@ def query():
     # for pagination, only display 10 records
     totalPages = int(math.ceil(len(results) / 10))
     displayResult = results[0:10]
+
 
     return render_template('results.html', docs=displayResult, current_page=1, total_pages=totalPages)
   else:
@@ -201,6 +206,8 @@ def filter():
 
 @app.route("/crawling", methods=['GET'])
 def crawling():
+    # call crawling function here
+
     return render_template("crawling.html")
 
 if __name__ == "__main__":
