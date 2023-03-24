@@ -124,9 +124,9 @@ def query():
     # suggtexts = autocomplete(results)
     # print(f"Your query is {query_term}, are you looking for {suggtexts}?")
 
-    # # more like this
-    # out = mlt(results)
-    # print(f"output for more like this is {out}")
+    # more like this
+    out = mlt(results)
+    print(f"output for more like this is {out}")
 
     # # Parse Solr results
     # results = json.loads(response.text)["response"]["docs"]

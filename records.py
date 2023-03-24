@@ -7,7 +7,8 @@ class records():
 
     @classmethod
     def store(cls, docs):
-      print("document ", docs[0]["Title"][0])
+      print
+      print("document ", docs[0]["Name"][0])
       cls.displayDocs = docs
       cls.docs = docs
       print("save records to displatDocs and docs")

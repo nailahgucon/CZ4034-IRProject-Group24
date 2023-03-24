@@ -80,15 +80,23 @@
 
 <body>
 
-  <nav class="navbar navbar-light sticky-top bg-light flex-md-nowrap p-0 shadow">
+  <nav class="navbar navbar-light sticky-top flex-md-nowrap p-0 shadow" style="background-color: #e3f2fd;">
     <a href="{{url_for('home')}}"><img src="/static/checkMaster2.png" alt="checkMaster logo"
         style="width:187px;height:55px;"></a>
 
 
-    <button class="navbar-toggler position-absolute d-md-none collapsed" type="button" data-toggle="collapse"
+    
+      <form action="/query" method="GET" >
+        <div class="input-group">
+          <input class="form-control" type="text" name="content" id="content">
+          <input class="btn btn-outline-secondary" type="submit" value="Search">
+        </div>
+      </form>
+    
+    <!-- <button class="navbar-toggler position-absolute d-md-none collapsed" type="button" data-toggle="collapse"
       data-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
-    </button>
+    </button> -->
 
     <!-- <input hidden class="form-control form-control-dark w-100" type="text" placeholder="Search" aria-label="Search" />
     <ul class="navbar-nav px-3">
