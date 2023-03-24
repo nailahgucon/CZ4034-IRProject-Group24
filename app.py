@@ -62,7 +62,8 @@ def home():
 def query():
   if request.method == 'GET':
 
-    # bellow is the query to solr. 
+    # bellow is the query to solr, need update to handle spell check, the variable suggtexts is used for spell suggestion to the user. 
+
     query_term = request.values.get("content").replace(" ","%20")
     filed = "Review"
     # Build Solr query
@@ -133,7 +134,7 @@ def query():
     suggtexts = "check"
 
 
-    # save the results to records class
+    # save the results to records class, don't change myRecords and totalPages.
     myRecords = records.records()
     myRecords.store(results)
     
