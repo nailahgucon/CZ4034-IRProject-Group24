@@ -1,5 +1,5 @@
 #!/bin/bash
-cd "CZ4034 Crawling"
+cd "crawling"
 python crawl_eateries_links.py
 echo "eatery links done"
 python crawl_hotels_links.py
