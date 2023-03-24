@@ -135,10 +135,11 @@
         </a>
         {% endif %}
     </li>
-
-    {% for page in range(total_pages) %}
-    <li class="page-item"><a class="page-link" href={{url_for('pagination',page=loop.index)}}>{{loop.index}}</a></li>
-    {% endfor %}
+    <div class="pagination-container" style="display: flex; flex-direction: row; height: 50px; overflow-y:hidden;overflow-x: scroll;" >
+      {% for page in range(total_pages) %}
+      <li class="page-item"><a class="page-link" href={{url_for('pagination',page=loop.index)}}>{{loop.index}}</a></li>
+      {% endfor %}
+    </div>
 
     <li class="page-item">
       <!-- Next button -->

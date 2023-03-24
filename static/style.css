@@ -108,3 +108,9 @@ body {
 .normal-font {
   font-size: 0.875rem;
 }
+
+.pagination-container::-webkit-outer-spin-button,
+.pagination-container::-webkit-inner-spin-button{
+  -webkit-appearance: none;
+  margin: 0;
+}
