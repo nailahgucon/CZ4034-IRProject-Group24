@@ -11,7 +11,7 @@ path_to_file = os.getcwd() + "\\reviews_combined.csv"
 # default number of scraped pages
 num_page = 1
 
-with open('links_eateries.csv', 'r') as file:
+with open('crawling\\links_eateries.csv', 'r') as file:
     reader = csv.reader(file)
     for row in reader:
         url = row[0]
