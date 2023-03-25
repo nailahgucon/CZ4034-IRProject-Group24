@@ -13,7 +13,7 @@ num_page = 1
 
 # default tripadvisor website of hotel
 
-with open('links_hotels.csv', 'r') as file:
+with open('crawling\\links_hotels.csv', 'r') as file:
     reader = csv.reader(file)
     for row in reader:
         url = row[0]
