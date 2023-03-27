@@ -15,15 +15,15 @@ app = Flask(__name__)
 
 server:str = "http://localhost:8983/solr/reviews/select"
 col_name:str = "spellCheck"  # or any other copyfields
-query_term:str = "Review"
-mlt_field = "Rating"
+query_term:str = "parkroyal"
+mlt_field = "Style"
 kwargs = {'spellcheck.build': "true",
           'spellcheck.reload': "true",
           'spellcheck': 'true',
           'mlt':'true',
           'mlt.fl': mlt_field,
           'mlt.interestingTerms':'details',
-          'mlt.match.include': 'false',
+          'mlt.match.include': 'true',
           'mlt.mintf': '0',
           'mlt.mindf': '0',
           }
@@ -55,6 +55,8 @@ def home():
 
   # # myRcords = records.records()
   # # myRcords.store(results)
+
+  
   
   return render_template('home.html')
 
@@ -87,83 +89,38 @@ def getAllrecords():
   displayResult = results[0:10]
   
   return render_template('results.html', docs=displayResult, current_page=1, total_pages=totalPages)
-
+  
 @app.route('/query', methods=['GET'])
 def query():
   if request.method == 'GET':
 
     # bellow is the query to solr, need update to handle spell check, the variable suggtexts is used for spell suggestion to the user. 
 
-    query_term = request.values.get("content").replace(" ","%20")
-    filed = "Review"
-    # Build Solr query
-    query = {
-        "q": "*:*",
-        "fq": f"{filed}:{query_term}",
-        "rows": 10000,
-        "start": 0,
-        "spellcheck.build": "true",
-        "spellcheck.reload": "true",
-        "spellcheck": "true",
-        "wt": "json",
-    }
-    URL = "http://localhost:8983/solr/reviews/select"
-    
-    # Send Solr query
-    response = requests.get(URL, params=query)
-    
-    # Parse Solr results
-    results = json.loads(response.text)["response"]["docs"]
-    # user_query = f"{col_name}:{query_term}"
-    # kwargs.update({"q": user_query})
+    user_query = f"{col_name}:{query_term}"
+    kwargs.update({"q": user_query})
 
-    # '''
-    # example of kwargs(additional params on top of query):
-    # {'spellcheck.build': "true",
-    #  'spellcheck.reload': "true",
-    #  'spellcheck': "true"}
-    # '''
-    # response = requests.get(server,
-    #                        params=kwargs)
+    results = requests.get(server,
+                           params=kwargs).json()
 
-    
-    # results = json.loads(response.text)
-    
-    # print(results)
+    # check results for typos
+    spellcheck_list = results.get("spellcheck").get("collations")
+    if spellcheck_list:
+        correct_terms, typo_terms, collation_queries = spellcheck(spellcheck_list)
 
-    # # check results for typos
-    # spellcheck_list = results.get("spellcheck").get("collations")
-    # if spellcheck_list:
-    #     correct_terms, typo_terms, collation_queries = spellcheck(spellcheck_list)
-    #     print("Are these what you mean?")
-    #     # if more than 1 correct terms
-    #     for terms in collation_queries:
-    #       term_ = terms.split('\n')
-    #       # takes the odd indices
-    #       term = ' '.join([
-    #         term_[i] for i in range(len(term_))
-    #         if i % 2 == 1])
-    #       print(term)
-    #       # # can re-query
-    #       # res2 = query(col_name, correct_term, server, **kwargs)
-    #       # res.update(res2)
-    # # else:
-    # #     typo_res.update(results)
-    
-    # # check results for suggestions
-    # suggtexts = autocomplete(results)
-    # print(f"Your query is {query_term}, are you looking for {suggtexts}?")
+    print(f"Spellcheck: Error! Search instead for {collation_queries}?")
+
+    # check results for suggestions
+    # kiv - need AJAX for updating
+    suggtexts = autocomplete(results)
+
+    print(f"Autocomplete: Are you looking for {suggtexts}?")
 
     # more like this
     out = mlt(results)
-    print(f"output for more like this is {out}")
+    print(f"More like this: {out}, matching on the field {mlt_field}")
 
     # # Parse Solr results
     # results = json.loads(response.text)["response"]["docs"]
-
-    suggtexts = "check"
-
-
     # save the results to records class, don't change myRecords and totalPages.
     myRecords = records.records()
     myRecords.store(results)

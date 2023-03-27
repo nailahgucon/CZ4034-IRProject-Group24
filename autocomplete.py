@@ -8,15 +8,10 @@ def autocomplete(res) -> List[str]:
     autocompletes the query by offering suggestions
     res: response result dictionary
     '''
-    suggested = res.get("spellcheck").get("suggestions")
-    if suggested:
-        suggtexts = []
-        for suggestion in suggested:
-            if type(suggestion) is dict:
-                sugg_texts = suggestion.get("suggestion")
-                for sugg_text in sugg_texts:
-                    suggtexts.append(sugg_text
-                        )
-        return suggtexts
-    else:
-        return None
+    docs = res["response"]["docs"]
+    sugg = set()
+    for doc in docs:
+        if "autocomplete__txtsug" in doc:
+            sugg.add(doc["autocomplete__txtsug"][0])
+    return list(sugg)
+

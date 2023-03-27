@@ -16,11 +16,11 @@ def mlt(res) -> List[str]:
                      "mlt.mintf": "0",
                      "mlt.mindf": "0"}
         out = mlt(col_name, query_term, field, mlt_url, **mlt_params)
-    '''
+        url: '''
     mlt_list = []
-    if "moreLikeThis" in res:
-        for i in res["moreLikeThis"]:
-            morelikethises = res["moreLikeThis"][i].get("docs")
-            for morelikethis in morelikethises:
-                mlt_list.extend(morelikethis.get(field_you_want))
+    # if "moreLikeThis" in res:
+    for i in res["moreLikeThis"]:
+        morelikethises = res["moreLikeThis"][i].get("docs")
+        for morelikethis in morelikethises:
+            mlt_list.extend(morelikethis.get(field_you_want))
     return mlt_list
