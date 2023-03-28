@@ -1,12 +1,14 @@
-import json
+from pathlib import Path
+
 import os
 import pickle
 from typing import List
 import csv
 
-# from config import config
+from backend import Place
 
-from place import Place
+ROOT = str(Path().absolute())
+DATA_FILE = ROOT + "/backend/data"
 
 
 def load_in(dir: str) -> List[Place]:
@@ -35,7 +37,10 @@ def load_in(dir: str) -> List[Place]:
                               ))
     return all_places
 
+def save_object(obj, filename):
+    with open(filename, 'wb') as outp:  # Overwrites any existing file.
+        pickle.dump(obj, outp, pickle.HIGHEST_PROTOCOL)
 
-
-
-
+if __name__ == "__main__":
+    db: List[Place] = load_in(DATA_FILE)
+    save_object(db, f'{DATA_FILE}/place.pkl')
