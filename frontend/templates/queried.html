@@ -1,0 +1,103 @@
+<!-- {% extends 'base.html'%} -->
+
+<div class="table-responsive">
+    <table class="table table-striped table-sm table-bordered">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+        </tr>
+      </thead>
+  
+      <tbody>
+  
+        {% for result in typos %}
+        <tr>
+          <td class="align-middle">{{loop.index}}</td>
+          <td class="align-middle">{{result.Name[0]}}</td>  
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-striped table-sm table-bordered">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>Category</th>
+          <th>Style</th>
+          <th>Star</th>
+        </tr>
+      </thead>
+  
+      <tbody>
+  
+        {% for result in docs %}
+        <tr>
+          <td class="align-middle">{{loop.index}}</td>
+          <td class="align-middle">{{result.Name[0]}}</td>
+          <td class="align-middle">{{result.Category[0]}}</td>
+          <td class="align-middle">{{result.Style[0]}}</td>
+          <td class="align-middle">{{result.Star[0]}}</td>    
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <nav aria-label="Page navigation example">
+    <ul class="pagination justify-content-end">
+  
+      <li class="page-item">
+        <!-- First button -->
+        <a class="page-link" href={{url_for('pagination_bp.pagination',page=1 )}} aria-label="First page">
+          <span aria-hidden="true">&laquo;</span>
+          <span class="sr-only">First page</span>
+        </a>
+      </li>
+  
+      <li class="page-item">
+        <!-- Previous button -->
+        {% if current_page-1<1 %} <a class="page-link" href="#" aria-label="Previous">
+          <span aria-hidden="true">&lt;</span>
+          <span class="sr-only">Previous</span>
+          </a>
+          {% else %}
+          <a class="page-link" href={{url_for('pagination_bp.pagination',page=current_page-1 )}} aria-label="Previous">
+            <span aria-hidden="true">&lt;</span>
+            <span class="sr-only">Previous</span>
+          </a>
+          {% endif %}
+      </li>
+      <div class="pagination-container" style="display: flex; flex-direction: row; height: 50px; overflow-y:hidden;overflow-x: scroll;" >
+        {% for page in range(total_pages) %}
+        <li class="page-item"><a class="page-link" href={{url_for('pagination_bp.pagination',page=loop.index)}}>{{loop.index}}</a></li>
+        {% endfor %}
+      </div>
+  
+      <li class="page-item">
+        <!-- Next button -->
+        {% if current_page+1>total_pages %}
+        <a class="page-link" href="#" aria-label="Next">
+          <span aria-hidden="true">&gt;</span>
+          <span class="sr-only">Next</span>
+        </a>
+        {% else %}
+        <a class="page-link" href={{url_for('pagination_bp.pagination',page=current_page+1 )}} aria-label="Next">
+          <span aria-hidden="true">&gt;</span>
+          <span class="sr-only">Next</span>
+        </a>
+        {% endif %}
+      </li>
+  
+      <li class="page-item">
+        <!-- Last button -->
+        <a class="page-link" href={{url_for('pagination_bp.pagination',page=total_pages )}} aria-label="Last page">
+          <span aria-hidden="true">&raquo;</span>
+          <span class="sr-only">Last page</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
