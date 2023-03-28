@@ -1,5 +1,7 @@
 import json
 import math
+import subprocess
+import os
 from flask import Flask, render_template, request
 from datetime import datetime
 import records
@@ -238,7 +240,10 @@ def filter():
 @app.route("/crawling", methods=['GET'])
 def crawling():
     # call crawling function here
-
+    subprocess.call(['python', os.getcwd() + '\\crawling\\crawl_eateries_links.py'])
+    subprocess.call(['python', os.getcwd() + '\\crawling\\crawl_hotels_links.py'])
+    subprocess.call(['python', os.getcwd() + '\\crawling\\crawling_eateries.py'])
+    subprocess.call(['python', os.getcwd() + '\\crawling\\crawling_hotels.py'])
     return render_template("crawling.html")
 
 if __name__ == "__main__":
