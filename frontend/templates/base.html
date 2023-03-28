@@ -82,7 +82,7 @@
 
   <nav class="navbar navbar-light bg-light sticky-top flex-md-nowrap p-0 shadow">
     <div class="container-fluid">
-      <a href="{{url_for('home')}}"><img src="/static/checkMaster2.png" alt="checkMaster logo"
+      <a href="{{url_for('home_bp.home')}}"><img src="/static/checkMaster2.png" alt="checkMaster logo"
           style="width:187px;height:55px;"></a>
   
   
@@ -107,13 +107,18 @@
           <ul class="nav flex-column">
 
             <li class="nav-item">
-              <a class="nav-link active" href="{{url_for('home')}}">
+              <a class="nav-link active" href="{{url_for('home_bp.home')}}">
                 Home
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link active" href="{{url_for('crawling')}}">
+              <a class="nav-link active" href="{{url_for('crawling_bp.crawling')}}">
                 Crawling
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="{{url_for('query_bp.query',page_name='sub')}}">
+                Query
               </a>
             </li>
 
