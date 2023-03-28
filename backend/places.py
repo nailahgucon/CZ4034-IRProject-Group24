@@ -11,6 +11,7 @@ from .place import Place
 @dataclass
 class Places:
     place_list: List[Place] = field(default_factory=list)
+    unique_style_list: List[str] = field(default_factory=list)
 
     def extend(self, place: List[Place]):
         '''
@@ -50,3 +51,9 @@ class Places:
         '''
         return [p.style for p in self.place_list]
 
+    def get_unique_styles(self):
+        unique = set()
+        for place in self.get_styles:
+            for place_style in place:
+                unique.add(place_style)
+        return list(unique)
