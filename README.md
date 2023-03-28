@@ -14,3 +14,7 @@ bin/solr create -c reviews -d reviews
 
 ## Upload data
 bin/post -c reviews data
+
+
+## Delete all Data
+<delete><query>*:*</query></delete>
