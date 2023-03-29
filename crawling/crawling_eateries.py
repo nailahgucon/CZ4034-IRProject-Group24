@@ -14,7 +14,7 @@ num_page = 1
 
 # -------- handle "sponsored" eateries duplicates -------- 
 # Load CSV file into a Pandas DataFrame
-df = pd.read_csv(os.getcwd() + "\\links_eateries_withDups.csv", header=None)
+df = pd.read_csv(os.getcwd() + "\\crawling\\links_eateries_withDups.csv", header=None)
 
 # Drop duplicate values in the first column
 df.drop_duplicates(subset=df.columns[0], inplace=True)
