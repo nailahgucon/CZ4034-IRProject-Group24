@@ -1,0 +1,23 @@
+<!-- {% extends "base.html" %} -->
+<!-- {% set active_page = "home" %} -->
+{% block content %}
+<span>Showing {{place_list|length}} results</span>
+    <table id="table place-list">
+      <caption>
+        List of Places
+      </caption>
+      
+    <thead>
+      <tr>
+        <th>Name</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for place, link in place_list %}
+        <tr>
+          <td><a href={{ link }}>{{ place }}</a></td>
+        </tr>
+      {% endfor %}
+    </tbody>
+    </table>
+{% endblock %}

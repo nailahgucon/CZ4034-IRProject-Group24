@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Set, Tuple
 
 from .place import Place
+import geopy.distance
 
 
 @dataclass
@@ -34,6 +35,16 @@ class Places:
         returns the url of a single place
         '''
         return [p.link for p in self.place_list]
+    
+    def calculate_nearest(self,
+                          place:Place,
+                          min_dist:float = 1.0) -> List[Place]:
+        closest = []
+        for p in self.place_list:
+            dist = geopy.distance.geodesic(place.coordinates, p.coordinates).km
+            if dist != 0 and dist <= min_dist:
+                closest.append(p)
+        return closest
 
     @property
     def get_names(self) -> List[str]:

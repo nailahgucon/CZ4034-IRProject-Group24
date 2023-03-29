@@ -7,18 +7,19 @@ from typing import Dict, List, Set, Tuple
 
 
 @dataclass
-class Place:
+class Response:
     name: str
     style: List[str]
     category: str
     star: float
-    # Latitude, longitude
-    coordinates: Tuple[float, float]
+    date: str
+    rating: float
+    reviewstitles: str
+    reviews: str
+
 
     def __post_init__(self):
         self.style = self.style.split("|")
-
-    
 
     # @property
     # def link(self):
@@ -26,4 +27,4 @@ class Place:
     #     name = name.replace(',', '%2c')
         # return f"http://127.0.0.1:5000/place/{self.name.replace(' ', '+')}"
         # return name
-    
+

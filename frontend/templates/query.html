@@ -3,8 +3,8 @@
 <form method="POST" autocomplete="off" action="{{ url_for('query_bp.query', page_name='sub') }}">
   <div class='col-xs-12 col-sm-12 col-md-10 col-lg-10'>
       <div class='input-group'>
-          <input id="autocomplete" class='form-control' type='text' name='restaurant_name'
-                 placeholder='Enter ingredients separated by commas...'/>
+          <input id="autocomplete" class='form-control' type='text' name='place_name'
+                 placeholder='Enter search query'/>
           <span class="input-group-btn">
             <button id="searchBtn" type='submit' class='btn btn-default'>
               Enter
@@ -114,8 +114,8 @@ document.addEventListener("click", function (e) {
 }
 
 /*An array containing ingredients*/
-var ingredients = ['hotel1', 'hotel2', 'eatery1', 'middleeateryterm', 'G.  hotel'];
-autocomplete(document.getElementById("autocomplete"), ingredients);
+var place_list = {{ availableTags|safe }};
+autocomplete(document.getElementById("autocomplete"), place_list);
 
 
 

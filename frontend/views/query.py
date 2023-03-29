@@ -1,22 +1,35 @@
-from flask import Blueprint, render_template, request, jsonify
+import re
+from flask import Blueprint, render_template, request, jsonify, redirect, url_for
 # from frontend.views.processes import autocomplete
 from typing import List
+from backend.place import Place
 from frontend.views.processes import autocomplete
 from frontend.views.processes import spellcheck
 import requests
 
+import googlemaps
+
 import pickle
 
 from backend import Places
+from backend import Response
+
+# API_KEY = ''
+# map_client = googlemaps.Client(API_KEY)
 # from backend import place
 # from config import config
-server:str = "http://localhost:8983/solr/reviews/select"
+server_main:str = "http://localhost:8983/solr/reviews/select"
+server_sub:str = "http://localhost:8983/solr/all_data/select"
+
 # get all objects
 with open("backend/data/place.pkl", 'rb') as inp:
     s = pickle.load(inp)
 
 db = Places()
 db.extend(s)
+
+o = db.calculate_nearest(db.place_list[0], 40)
+print(o)
 
 places: List[str] = db.get_names
 mlt_field = "Style"
@@ -36,39 +49,33 @@ query_bp = Blueprint('query_bp', __name__, url_prefix='/query')
 
 @query_bp.route('/<page_name>', methods=['GET', 'POST'])
 def query(page_name):
+    # autocomplete for only hotel and eatery names
+    availableTags = list(set(db.get_names))
+
+    # Search page
     if request.method == 'GET':
         if page_name == "main":
-            return "kiv"
+            return render_template('home.html')
         elif page_name == "sub":
-            # search bar for only hotel and eatery names
-            # TODO add availableTags as variable to javascript query.html
-            availableTags = list(set(db.get_names))
-            search = request.args.get('selected-input')
-            print(f"The search term is: {search}")
-            # user_query = f"spellCheck:{search}"
-            # kwargs.update({"q": user_query})
-
-            # results = requests.get(server,
-            #                       params=kwargs).json()
-            # suggtexts = autocomplete(results)
-
-            # print(f"Autocomplete: Are you looking for {suggtexts}?")
-            
-            return render_template('query.html')
+            # TODO: autocomplete done
+            return render_template('query.html',
+                                   availableTags=availableTags)
         else:
-            return "kiv"
+            return render_template('404.html')
+    # results
     elif request.method == 'POST':
         if page_name == "main":
-            return "kiv"
+            return render_template('home.html')
         elif page_name == "sub":
-            query_term = request.form.get('restaurant_name')
+            query_term = request.form.get('place_name')
             user_query = f"spellCheck:{query_term}"
             kwargs.update({"q": user_query})
 
-            results = requests.get(server,
-                                params=kwargs).json()
+            results = requests.get(server_sub,
+                                   params=kwargs).json()
             
             # ------------------------
+            # TODO: spellcheck done
             # check results for typos
             collation_queries = []
             spellcheck_list = results.get("spellcheck").get("collations")
@@ -76,53 +83,78 @@ def query(page_name):
                 correct_terms, typo_terms, collation_queries = spellcheck(spellcheck_list)
 
                 print(f"Spellcheck: Error! Search instead for {collation_queries}?")
-            
-            print(results)
-            
-            # TODO rendering template
-            return render_template('queried.html', docs=results,
-                                   typos=collation_queries)
+                return render_template('queried.html',
+                                       typos=collation_queries)
+            res = results.get("response").get("docs")
+            # TODO: more than 1 results done
+            if len(res) > 1:
+                routes = []
+                names = []
+                for i in res:
+                    name=i.get("Name")[0]
+                    routes.append(f"http://127.0.0.1:5000/query/place/{name.replace(' ', '%20')}")
+                    names.append(name)
+                place_list = list(zip(names, routes))
+                return render_template('query_results.html',
+                                       place_list=place_list)
+            # TODO: 1 result done
+            elif len(res)==1:
+                name = res[0].get("Name")[0]
+                if name == query_term:
+                    return redirect(url_for('query_bp.place', name=name))
+                else:
+                    routes = []
+                    names = []
+                    for i in res:
+                        name=i.get("Name")[0]
+                        routes.append(f"http://127.0.0.1:5000/query/place/{name.replace(' ', '%20')}")
+                        names.append(name)
+                    place_list = list(zip(names, routes))
+                    return render_template('query_results.html',
+                                        place_list=place_list)
+            # TODO: no results done
+            else:
+                print("Could not find, try filtering instead?")
+            return render_template('query.html',
+                                   availableTags=availableTags)
         else:
-            return "kiv"
+            return render_template('404.html')
 
-      
-    #jsonify(matching_results=suggtexts)
-        # place_list = list(zip(db.place_list, db.links()))
-        # faculty_list = sorted(faculty_list, key=lambda x: x[0].name)
-        # return render_template('home.html', faculty_list=faculty_list)
-        # bellow is the query to solr, need update to handle spell check,
-        # the variable suggtexts is used for spell suggestion to the user. 
-        
-
-        # # check results for typos
-        # spellcheck_list = results.get("spellcheck").get("collations")
-        # if spellcheck_list:
-        #     correct_terms, typo_terms, collation_queries = spellcheck(spellcheck_list)
-
-        # print(f"Spellcheck: Error! Search instead for {collation_queries}?")
-
-        # # check results for suggestions
-        # # kiv - need AJAX for updating
-        # suggtexts = autocomplete(results)
-
-        # print(f"Autocomplete: Are you looking for {suggtexts}?")
-
-        # # more like this
-        # out = mlt(results)
-        # print(f"More like this: {out}, matching on the field {mlt_field}")
-
-        # # # Parse Solr results
-        # # results = json.loads(response.text)["response"]["docs"]
-        # # save the results to records class, don't change myRecords and totalPages.
-        # myRecords = records.records()
-        # myRecords.store(results)
-        
-        # # for pagination, only display 10 records
-        # totalPages = int(math.ceil(len(results) / 10))
-        # displayResult = results[0:10]
-
-
-        # return render_template('results.html', docs=displayResult, current_page=1, total_pages=totalPages)
+@query_bp.route('/place/<name>')
+def place(name: str):
+    '''
+    creates a single place page
+    '''
+    # rname = name.replace("+", " ")
+    # f = db.get_member(rname)
+    # if f is None:
+    #     return render_template("404.html")
+    # Bar(db).plot(page=page, faculty=f,
+    #              filename=config.FCITES_PATH,
+    #              xaxis_title="Year",
+    #              yaxis_title="No. of citations")
     
-    # else:
-    # return render_template('home.html')
+    name_ = re.sub('[^0-9a-zA-Z]+', '_', name)
+    name_ = name_.lower()
+    server_place:str = f"http://localhost:8983/solr/{name_}/select"
+    # user_query = f"spellCheck:{query_term}"
+    kwargs.update({"q": "*:*"})
+
+    results = requests.get(server_place,
+                            params=kwargs).json()
+    results=results.get("response").get("docs")
+    responses = []
+    for i in results:
+        responses.append(Response(
+            name=i.get("Name")[0],
+            style=i.get("Style")[0],
+            category=i.get("Category")[0],
+            star=i.get("Star")[0],
+            date=i.get("Date")[0],
+            rating=i.get("Rating")[0],
+            reviewstitles=i.get("ReviewTitle")[0],
+            reviews=i.get("Review")[0]
+        ))
+    # address = map_client.geocode(name)
+    # print(address[0]['geometry'])
+    return render_template("place.html", responses=responses)

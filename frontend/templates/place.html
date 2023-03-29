@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <p class="navigation"> Quick navigation <span>&#128640;</span></p>
+    <ul class="navigation" id="place-navigation">
+        <a href="#background-info">Background</a>
+        <a href="#reviews">Reviews</a>
+        <a href="#navigation">Map Navigation</a>
+        <a href="#more-like-this">More like this</a></ul>
+    
+    <div class="place-details">
+        <h1>{{ responses.name }}</h1></div>
+
+
+    <div id="background-info">
+        <div class="float-container">
+            <div class="side-by-side-info">
+                <h2 class="heading">Category</h2>
+            </div>
+            <div class="side-by-side-info">
+                <p class="info">
+                {{ (responses.category) }}
+                </p>
+            </div>
+
+            <div class="side-by-side-info">
+                <h2 class="heading">Style</h2>
+            </div>
+            <div class="side-by-side-info">
+                <p class="info">
+                    <ul>
+                        {% for style in responses.style %}
+                            <li>{{ style }}</li>
+                        {% endfor %}
+                    </ul>
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+
+    <div id="reviews">
+        <div class="float-container">
+            <div class="side-by-side-info">
+                <h2 class="heading">Reviews</h2>
+            </div>
+            <div class="side-by-side-info">
+                <p class="info">
+                    <table class="table responses-publications">
+                        <thead>
+                        <tr>
+                            <th>Review date</th>
+                            <th>Review title</th>
+                            <th>Review</th>
+                            <th>Rating</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for res in responses %}
+                            <tr>
+                            <td>{{ res.date }}</td>
+                            <td>{{ res.reviewstitles }}</td>
+                            <td>{{ res.reviews }}</td>
+                            <td>{{ res.rating }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div id="navigation">
+        <div class="float-container">
+            <div class="side-by-side-info">
+                <h2 class="heading">Map navigation</h2>
+            </div>
+            <div class="side-by-side-info">
+                <p class="info">
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div id="more-like-this">
+        <div class="float-container">
+            <div class="side-by-side-info">
+                <h2 class="heading">More like this</h2>
+            </div>
+            <div class="side-by-side-info">
+                
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
