@@ -1,21 +1,42 @@
 <!-- {% extends "base.html" %} -->
 <!-- {% set active_page = "home" %} -->
 {% block content %}
+<span>Showing {{other_matches|length}} advanced results</span>
+<table id="table place-list">
+  <caption>
+    Advanced results (sorted by distance)
+  </caption>
+<thead>
+  <tr>
+    <th>Name</th>
+    <th>Distance</th>
+  </tr>
+</thead>
+<tbody>
+  {% for match in other_matches %}
+    <tr>
+      <td><a href={{url_for('query_bp.place',name=match[0] )}}>{{ match[0] }}</a></td>
+      <td>{{ match[1] }}</a></td>
+    </tr>
+  {% endfor %}
+</tbody>
+</table>
+
+
 <span>Showing {{place_list|length}} results</span>
     <table id="table place-list">
       <caption>
         List of Places
       </caption>
-      
     <thead>
       <tr>
         <th>Name</th>
       </tr>
     </thead>
     <tbody>
-      {% for place, link in place_list %}
+      {% for place in place_list %}
         <tr>
-          <td><a href={{ link }}>{{ place }}</a></td>
+          <td><a href={{url_for('query_bp.place',name=place )}}>{{ place }}</a></td>
         </tr>
       {% endfor %}
     </tbody>

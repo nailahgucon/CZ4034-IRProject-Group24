@@ -36,15 +36,29 @@ class Places:
         '''
         return [p.link for p in self.place_list]
     
-    def calculate_nearest(self,
-                          place:Place,
-                          min_dist:float = 1.0) -> List[Place]:
-        closest = []
+    def calculate_dist(self,
+                       place:Place,
+                       dist='near',
+                       dist_value:float = 1.0) -> List[Place]:
+        places = []
         for p in self.place_list:
-            dist = geopy.distance.geodesic(place.coordinates, p.coordinates).km
-            if dist != 0 and dist <= min_dist:
-                closest.append(p)
-        return closest
+            if p != place:
+                distance = place.calculate_dist(p)
+                if dist == 'near':
+                    if distance <= dist_value:
+                        places.append(p)
+                elif dist == 'far':
+                    if distance >= dist_value:
+                        places.append(p)
+                else:
+                    print("Error")
+        return places
+    
+    def get_place(self, name:str) -> Place:
+        for i in self.place_list:
+            if i.name in name:
+                return i
+        return None
 
     @property
     def get_names(self) -> List[str]:
