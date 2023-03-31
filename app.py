@@ -62,7 +62,7 @@ def getAllrecords():
   myRecords.store(results)
   
   # for pagination, only display 10 records
-  totalPages = int(math.ceil(len(results) / 10))
+  totalPages = int(math.ceil(rawData["response"]["numFound"] / 10))
   displayResult = results[0:10]
   
   return render_template('results.html', docs=displayResult, distinctStyle=distinctStyle, current_page=1, total_pages=totalPages)
@@ -83,20 +83,23 @@ def query():
     
     # Parse Solr results
     rawData = json.loads(response.text)
-    results = rawData["response"]["docs"]
-    distinctStyle = rawData["facets"]["distinctStyle"]["buckets"]
-    for i in distinctStyle:
-      i["val"] = i["val"].replace("[",'').replace("]",'').replace("'",'')
-    myQuery.storeStyle(distinctStyle)
+    if rawData["response"]["numFound"] != 0:
+      results = rawData["response"]["docs"]
+      distinctStyle = rawData["facets"]["distinctStyle"]["buckets"]
+      for i in distinctStyle:
+        i["val"] = i["val"].replace("[",'').replace("]",'').replace("'",'')
+      myQuery.storeStyle(distinctStyle)
 
-    # save the results to records class
-    myRecords = records.records()
-    myRecords.store(results)
-    
-    # for pagination, only display 10 records
-    totalPages = int(math.ceil(len(results) / 10))
-    displayResult = results[0:10]
-
+      # save the results to records class
+      myRecords = records.records()
+      myRecords.store(results)
+      # for pagination, only display 10 records
+      totalPages = int(math.ceil(rawData["response"]["numFound"] / 10))
+      displayResult = results[0:10]
+    else:
+      displayResult = []
+      distinctStyle = []
+      totalPages = 0
 
     return render_template('results.html', docs=displayResult, distinctStyle=distinctStyle, current_page=1, total_pages=totalPages)
   else:
@@ -193,7 +196,7 @@ def filter():
       distinctStyle = myQuery.getStyle()
     
     # for pagination, only display 10 records
-    totalPages = int(math.ceil(len(results) / 10))
+    totalPages = int(math.ceil(rawData["response"]["numFound"] / 10))
     displayResult = results[0:10]
 
     return render_template('results.html', docs = displayResult, distinctStyle=distinctStyle, current_page=1, total_pages=totalPages)
