@@ -5,6 +5,7 @@ from selenium.webdriver.common.by import By
 import time
 import os
 import pandas as pd
+from datetime import datetime
 
 # default path to file to store data
 path_to_file = os.getcwd() + "\\reviews_combined.csv"
@@ -110,8 +111,10 @@ with open('crawling\\links_eateries.csv', 'r') as file:
                     date = container[j].find_element(By.XPATH, ".//div[@class='prw_rup prw_reviews_stay_date_hsx']").text.replace("Date of visit: ","")
                     rating = int(container[j].find_element(By.XPATH, ".//span[contains(@class, 'ui_bubble_rating bubble_')]").get_attribute("class").split("_")[3])/10
                     review = container[j].find_element(By.XPATH, ".//p[@class='partial_entry']").text.replace("\n", " ")
+                    date_obj = datetime.strptime(date, '%B %Y')
+                    date_formatted = date_obj.strftime('%Y-%m-%d')
 
-                    csvWriter.writerow([name, "Eatery", eStyle, eStar, date, rating, title, review]) 
+                    csvWriter.writerow([name, "Eatery", eStyle, eStar, date_formatted, rating, title, review]) 
                 except:
                     continue
             
