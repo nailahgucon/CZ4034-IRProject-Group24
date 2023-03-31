@@ -5,6 +5,7 @@ from selenium.webdriver.common.by import By
 import time
 import os
 import pandas as pd
+from datetime import datetime
 
 # default path to file to store data
 path_to_file = os.getcwd() + "\\reviews_combined.csv"
@@ -79,8 +80,10 @@ with open('crawling\\links_hotels.csv', 'r') as file:
                     title = container[j].find_element(By.XPATH, ".//div[contains(@data-test-target, 'review-title')]").text
                     review = container[j].find_element(By.XPATH, ".//span[@class='QewHA H4 _a']").text.replace("\n", "  ") # site changed to from q to span on 29/3/2023
                     date = container[j].find_element(By.XPATH, ".//span[@class='teHYY _R Me S4 H3']").text.replace("Date of stay: ","")
+                    date_obj = datetime.strptime(date, '%B %Y')
+                    date_formatted = date_obj.strftime('%Y-%m-%d')
                 
-                    csvWriter.writerow([name, "Hotel", hStyle, hClass, date, rating, title, review]) 
+                    csvWriter.writerow([name, "Hotel", hStyle, hClass, date_formatted, rating, title, review]) 
                 except:
                     continue
                 
