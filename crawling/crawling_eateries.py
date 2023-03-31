@@ -86,7 +86,8 @@ with open('crawling\\links_eateries.csv', 'r') as file:
         # Open the file to save the review
         csvFile = open(path_to_file, 'a', encoding="utf-8", newline='')
         csvWriter = csv.writer(csvFile)
-        # csvWriter.writerow(["Name","Category","Style","Star","Date", "Rating", "ReviewTitle", "Review"]) 
+        if os.stat(os.getcwd() + "\\reviews_combined.csv").st_size == 0:
+            csvWriter.writerow(["Name","Category","Style","Star","Date", "Rating", "ReviewTitle", "Review"])  
 
         # change the value inside the range to save more or less reviews
         for i in range(0, num_page):
