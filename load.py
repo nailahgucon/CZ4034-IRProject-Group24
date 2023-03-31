@@ -17,7 +17,7 @@ def load_in(dir: str) -> List[Place]:
     """
     all_places = []
     for f in os.listdir(dir):
-        if f.endswith(".csv"):
+        if f.endswith("finalised.csv"):
             with open(os.path.join(dir, f), 'r') as out:
                 # info = json.load(out)
                 csvreader = csv.reader(out)

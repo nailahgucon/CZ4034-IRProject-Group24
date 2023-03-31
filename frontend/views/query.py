@@ -15,7 +15,7 @@ from backend import Response
 # from backend import place
 # from config import config
 server_main:str = "http://localhost:8983/solr/reviews/select"
-server_sub:str = "http://localhost:8983/solr/all_data/select"
+
 
 nlp = spacy.load("en_core_web_sm")
 
@@ -26,8 +26,9 @@ with open("backend/data/place.pkl", 'rb') as inp:
 db = Places()
 db.extend(s)
 
-# o = db.calculate_nearest(db.place_list[0], 40)
-# print(o)
+# TODO rank query results
+# TODO fix distance # done
+# TODO top-k "best eateries/best hotels"
 
 places: List[str] = db.get_names
 mlt_field = "Style"
@@ -47,6 +48,16 @@ FAR_WORDS = ["far", "away", "further", "distant"]
 
 CAT_EATERY = ['eateries', 'eatery', 'eat']
 CAT_HOTEL = ['hotel', 'hotels', 'stay']
+
+FILTER_WORDS_TOP = ["best", "top", "popular", "high", "highest"]
+FILTER_WORDS_BOT = ["worst", "worse", "least", "bad", "bottom"]
+
+def req_sub(q: str, sort:str=None, sort_ord:str="desc", build:bool=False):
+    server_sub:str = f"http://localhost:8983/solr/all_data/select?q={q}&sort={sort}%20{sort_ord}&spellcheck=true&spellcheck.build={str(build).lower()}"
+    print(server_sub)
+    print("http://localhost:8983/solr/all_data/select?q=*:*&sort=Star%20asc")
+    print("compare")
+    return server_sub
 
 query_bp = Blueprint('query_bp', __name__, url_prefix='/query')
 
@@ -74,35 +85,62 @@ def query(page_name):
             query_term = request.form.get('place_name')
             # special query 1 - distance
                 # e.g. eateries near Parkroyal Hotel
+            # special query 2 - top-k
+                # e.g. where are the best Hotels?           -- need to check solr again
+                # e.g. top eateries near Parkroyal Hotel    # done
+                # e.g. top 5 eateries near Parkroyal        -- need to check solr again
+                # e.g. top eateries                         -- need to check solr again
             dist = None
             category = None
+            rank = None
             split_query = query_term.split(" ")
             for i in split_query:
                 if i in NEAR_WORDS:
                     dist = 'near'
-                    default_dist = 10.0
+                    default_dist = 1.0
+                    if i in CAT_EATERY:
+                        category = 'eatery'
+                    elif i in CAT_HOTEL:
+                        category = 'hotel'
+                    else:
+                        pass
                 elif i in FAR_WORDS:
                     dist = 'far'
-                    default_dist = 10.0
-                else:
-                    pass
-                if i in CAT_EATERY:
-                    category = 'eatery'
-                elif i in CAT_HOTEL:
-                    category = 'hotel'
+                    default_dist = 5.0
+                    if i in CAT_EATERY:
+                        category = 'eatery'
+                    elif i in CAT_HOTEL:
+                        category = 'hotel'
+                    else:
+                        pass
                 else:
                     pass
 
+                if i in FILTER_WORDS_TOP:
+                    rank = 'asc'
+                    k = 5
+                elif i in FILTER_WORDS_BOT:
+                    rank = 'desc'
+                    k = 5
+                else:
+                    pass
             # standard query
+                # Parkroyal Hotel   -- standard     # done
+                # Parkroyil         -- spellcheck   # done
             about_doc = nlp(query_term)
             entity = ' '.join([token.text for token in about_doc.ents])
-
+            if not rank:
+                sort_field = ''
+            else:
+                sort_field = "Star"
             user_query = f"spellCheck:{entity}"
-            kwargs.update({"q": user_query})
+            print(user_query)
+            kwargs.update({"q": user_query,
+                           "sort": sort_field},
+                         )
 
-            results = requests.get(server_sub,
-                                   params=kwargs).json()
-            
+            results = requests.get(req_sub(user_query, sort_field, sort_ord=rank)).json()
+            print(results)
             # ------------------------
             # 0 result | 1 results | +1 results
             # ------------------------
@@ -123,7 +161,6 @@ def query(page_name):
                 # distance search
                     # adjust distance bar?
                 # popularity top-k search
-                        # display search page
             elif len(res) >= 1:
                 names = []
                 sorted_dist = {}
@@ -139,6 +176,8 @@ def query(page_name):
                             if match_:
                                 sorted_dist.update(match_)
                     sorted_dist = sorted(sorted_dist.items(), key=lambda x:x[1])
+                if rank and len(sorted_dist) > k:
+                    sorted_dist = sorted_dist[:k]
                 for i in res:
                     names.append(i.get("Name")[0])
                 return render_template('query_results.html',
@@ -158,8 +197,8 @@ def place(name: str):
     name_ = re.sub('[^0-9a-zA-Z]+', '_', name)
     query_name = re.sub('[^0-9a-zA-Z]+', ' ', name)
     name_ = name_.lower()
-    kwargs.update({"q": f"spellCheck:{query_name}"})
-
+    kwargs.update({"q": f"spellCheck:{query_name}",
+                   "sort": ''})
     results = requests.get(server_main,
                             params=kwargs).json()
     results=results.get("response").get("docs")

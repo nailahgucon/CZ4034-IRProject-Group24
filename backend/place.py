@@ -29,15 +29,16 @@ class Place:
         dist: str = kwargs["dist"]
         dist_value: float = kwargs["dist_value"]
         distance = self.calculate_dist(place)
+        match_ = False
         if category:
-            match_ = self.category==category
+            match_ = self.category.lower()==category
+            if not match_:
+                return None
         if dist:
             if dist == 'near':
-                if distance <= dist_value:
-                    match_ = True
+                match_ = (True if distance <= dist_value else False)
             elif dist == 'far':
-                if distance >= dist_value:
-                    match_ = True
+                match_ = (True if distance >= dist_value else False)
             else:
                 match_ = False
         if match_:
@@ -45,10 +46,4 @@ class Place:
         else:
             return None
 
-    # @property
-    # def link(self):
-    #     name = self.name.replace(' ', '+')
-    #     name = name.replace(',', '%2c')
-        # return f"http://127.0.0.1:5000/place/{self.name.replace(' ', '+')}"
-        # return name
     
