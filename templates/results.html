@@ -14,7 +14,7 @@
 </div>
 
 <div class="form">
-  <form class="row g-3" action="/filter" method="GET" style="
+  <form class="row g-3" id="filter" action="/filter" method="GET" style="
   display: flex;
   align-items: center;
   justify-content: space-evenly;
@@ -29,7 +29,19 @@
       <input type="date" id="endDate" name="endDate" class="form-control">
     </div>
 
-    <div class="col-md-4">
+    <div class="col-md-3">
+      <br>
+      <label for="style">Filter by Style:</label>
+      <select id="style" name="style" class="form-select">
+        <option value="">Select a rating</option>
+        {% for i in distinctStyle %}
+          <option value={{i["val"]}}>{{i["val"]}}</option>
+        {% endfor %}
+      </select>
+      <br><br>
+    </div>
+
+    <div class="col-md-3">
       <br>
       <label for="category">Filter by Category:</label>
       <select id="category" name="category" class="form-select">
@@ -40,7 +52,7 @@
       <br><br>
     </div>
 
-    <div class="col-md-4">
+    <div class="col-md-3">
       <br>
       <label for="star">Filter by Star:</label>
       <select id="star" name="star" class="form-select">
@@ -54,7 +66,7 @@
       <br><br>
     </div>
 
-    <div class="col-md-4">
+    <div class="col-md-3">
       <br>
       <label for="rating">Filter by Rating:</label>
       <select id="rating" name="rating" class="form-select">
@@ -175,6 +187,22 @@
   function submit(){
     document.getElementById("spellCorrection").submit();
   }
+
+  document.querySelector('filter').addEventListener('submit', (event) => {
+    const startDate = document.querySelector('startDate').value;
+    const endDate = document.querySelector('endDate').value;
+    const style = document.querySelector('style').value;
+    const category = document.querySelector('category').value;
+    const star = document.querySelector('star').value;
+    const rating = document.querySelector('rating').value;
+    // do something with the user input, such as sending an AJAX request to the server
+    document.querySelector('startDate').value = startDate;
+    document.querySelector('endDate').value = endDate;
+    document.querySelector('style').value = style;
+    document.querySelector('category').value = category;
+    document.querySelector('star').value = star;
+    document.querySelector('rating').value = rating;
+  });
 
 </script>
 
