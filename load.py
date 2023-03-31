@@ -29,7 +29,7 @@ def load_in(dir: str) -> List[Place]:
                               category=row[1],
                               style=row[2],
                               star=float(row[3]),
-                              coordinates=(float(row[5]), float(row[4]))
+                              coordinates=(float(row[4]), float(row[5]))
                               ))
     return all_places
 

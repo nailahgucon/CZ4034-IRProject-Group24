@@ -1,6 +1,5 @@
 import re
-from flask import Blueprint, render_template, request, jsonify, redirect, url_for
-# from frontend.views.processes import autocomplete
+from flask import Blueprint, render_template, request
 from typing import List
 from backend.place import Place
 from frontend.views.processes import autocomplete
@@ -12,9 +11,16 @@ import pickle
 
 from backend import Places
 from backend import Response
-# from backend import place
-# from config import config
+
 server_main:str = "http://localhost:8983/solr/reviews/select"
+server_sub:str = "http://localhost:8983/solr/all_data/select"
+# proximity search
+# http://localhost:8983/solr/reviews/select?q=Review:%22lovely%20food%22~10
+# http://localhost:8983/solr/reviews/select?q=ReviewTitle:%22Good%20service%20dessert%22~10
+# http://localhost:8983/solr/reviews/select?q=ReviewTitle:%22Good%20service%22%20dessert
+
+# boosting terms
+# http://localhost:8983/solr/reviews/select?q=Review:%22lovely%20food%22^4%20ambience
 
 
 nlp = spacy.load("en_core_web_sm")
@@ -27,7 +33,6 @@ db = Places()
 db.extend(s)
 
 # TODO rank query results
-# TODO fix distance # done
 # TODO top-k "best eateries/best hotels"
 
 places: List[str] = db.get_names
@@ -41,10 +46,10 @@ kwargs = {'spellcheck.build': "true",
           'mlt.match.include': 'true',
           'mlt.mintf': '0',
           'mlt.mindf': '0',
+          'rows': 10,
           }
 
 NEAR_WORDS = ["near", "nearer", "close", "around"]
-FAR_WORDS = ["far", "away", "further", "distant"]
 
 CAT_EATERY = ['eateries', 'eatery', 'eat']
 CAT_HOTEL = ['hotel', 'hotels', 'stay']
@@ -52,12 +57,7 @@ CAT_HOTEL = ['hotel', 'hotels', 'stay']
 FILTER_WORDS_TOP = ["best", "top", "popular", "high", "highest"]
 FILTER_WORDS_BOT = ["worst", "worse", "least", "bad", "bottom"]
 
-def req_sub(q: str, sort:str=None, sort_ord:str="desc", build:bool=False):
-    server_sub:str = f"http://localhost:8983/solr/all_data/select?q={q}&sort={sort}%20{sort_ord}&spellcheck=true&spellcheck.build={str(build).lower()}"
-    print(server_sub)
-    print("http://localhost:8983/solr/all_data/select?q=*:*&sort=Star%20asc")
-    print("compare")
-    return server_sub
+WORDS = NEAR_WORDS+CAT_EATERY+CAT_HOTEL+FILTER_WORDS_TOP+FILTER_WORDS_BOT
 
 query_bp = Blueprint('query_bp', __name__, url_prefix='/query')
 
@@ -79,68 +79,73 @@ def query(page_name):
             return render_template('404.html')
     # results
     elif request.method == 'POST':
+        kwargs = {'spellcheck.build': "true",
+          'spellcheck.reload': "true",
+          'spellcheck': 'true',
+          'mlt':'true',
+          'mlt.fl': mlt_field,
+          'mlt.interestingTerms':'details',
+          'mlt.match.include': 'true',
+          'mlt.mintf': '0',
+          'mlt.mindf': '0',
+          }
         if page_name == "main":
             return render_template('home.html')
         elif page_name == "sub":
             query_term = request.form.get('place_name')
-            # special query 1 - distance
-                # e.g. eateries near Parkroyal Hotel
-            # special query 2 - top-k
-                # e.g. where are the best Hotels?           -- need to check solr again
-                # e.g. top eateries near Parkroyal Hotel    # done
-                # e.g. top 5 eateries near Parkroyal        -- need to check solr again
-                # e.g. top eateries                         -- need to check solr again
-            dist = None
+            # query 1 - exact match                          # done
+                # e.g. Parkroyal | parkroyal    
+            # query 2 - spelling check                       # done
+                # e.g. parkroyil
+            # special query 1 - distance                     # done
+                # e.g. eateries near Parkroyal Hotel    
+            # special query 2 - top-k                        # done
+                # e.g. top eateries near Parkroyal Hotel 
+                # e.g. top 5 eateries near Parkroyal  
+                # e.g. top eateries 
+            # special query 3 - More like this
             category = None
             rank = None
+            k = 100
+            geo_filter = False
             split_query = query_term.split(" ")
+            res2 = []
+            sort_field = ''
             for i in split_query:
                 if i in NEAR_WORDS:
-                    dist = 'near'
+                    geo_filter = True
                     default_dist = 1.0
-                    if i in CAT_EATERY:
-                        category = 'eatery'
-                    elif i in CAT_HOTEL:
-                        category = 'hotel'
-                    else:
-                        pass
-                elif i in FAR_WORDS:
-                    dist = 'far'
-                    default_dist = 5.0
-                    if i in CAT_EATERY:
-                        category = 'eatery'
-                    elif i in CAT_HOTEL:
-                        category = 'hotel'
-                    else:
-                        pass
+                if i in CAT_EATERY:
+                    category = 'eatery'
+                elif i in CAT_HOTEL:
+                    category = 'hotel'
                 else:
                     pass
 
                 if i in FILTER_WORDS_TOP:
                     rank = 'asc'
-                    k = 5
+                    kwargs.update({"rows":"5"})
                 elif i in FILTER_WORDS_BOT:
                     rank = 'desc'
-                    k = 5
+                    kwargs.update({"rows":"5"})
                 else:
                     pass
-            # standard query
-                # Parkroyal Hotel   -- standard     # done
-                # Parkroyil         -- spellcheck   # done
-            about_doc = nlp(query_term)
-            entity = ' '.join([token.text for token in about_doc.ents])
-            if not rank:
-                sort_field = ''
+            new_query = ' '.join([i for i in split_query if (i not in WORDS)])
+            if rank:
+                sort_field += "Star desc,"
+            # exact matches
+            if not new_query:
+                user_query = "*:*"
             else:
-                sort_field = "Star"
-            user_query = f"spellCheck:{entity}"
-            print(user_query)
+                if len(new_query.split()) == 1:
+                    user_query = f"spellCheck:{new_query}"
+                else:
+                    user_query = f"spellCheck:\"{new_query}\""
             kwargs.update({"q": user_query,
                            "sort": sort_field},
                          )
-
-            results = requests.get(req_sub(user_query, sort_field, sort_ord=rank)).json()
-            print(results)
+            results = requests.get(server_sub,
+                                   params=kwargs).json()
             # ------------------------
             # 0 result | 1 results | +1 results
             # ------------------------
@@ -158,30 +163,43 @@ def query(page_name):
                     return render_template('404.html')
             # ------------------------
             # 1/1+ result
-                # distance search
-                    # adjust distance bar?
-                # popularity top-k search
             elif len(res) >= 1:
                 names = []
-                sorted_dist = {}
-                if dist or category:
+                names2 = []
+                if geo_filter:
                     # get 1st place
-                    p = db.get_place(res[0].get("Name")[0])
-                    for i in db.place_list:
-                        if i.name != p.name:
-                            match_ = i.match(place=p,
-                                    category=category,
-                                    dist=dist,
-                                    dist_value=default_dist)
-                            if match_:
-                                sorted_dist.update(match_)
-                    sorted_dist = sorted(sorted_dist.items(), key=lambda x:x[1])
-                if rank and len(sorted_dist) > k:
-                    sorted_dist = sorted_dist[:k]
+                    sort_field += "geodist() asc"
+                    lat = res[0].get("lat")
+                    lon = res[0].get("lon")
+                    kwargs.update({"q": "*:*",
+                                   "fq": "{!geofilt}",
+                                   "sfield": "location",
+                                   "pt":f"{lat},{lon}",
+                                   "d":default_dist,
+                                   "sort": sort_field,
+                                   "fl":"{!func}geodist(),Name",
+                                   },
+                                )
+                    res2 = requests.get(server_sub,
+                                           params=kwargs).json()
+                    
+                    res2 = res2.get("response").get("docs")
+                    for i in res2[1:]:
+                        names2.append([i.get("Name")[0], i.get("{!func}geodist()")])
+                if category:
+                    kwargs.update({"q": "*:*",
+                                   "fq": f"Category:{category}",
+                                   "sort": sort_field,
+                                   },
+                                )
+                    res2 = requests.get(server_sub,
+                                           params=kwargs).json()
+                    
+                    res = res2.get("response").get("docs")
                 for i in res:
-                    names.append(i.get("Name")[0])
+                    names.append([i.get("Name")[0], i.get("Star")])
                 return render_template('query_results.html',
-                                       place_list=names, other_matches=sorted_dist)
+                                       place_list=names, other_matches=names2)
             else:
                 print("Could not find, try filtering instead?")
             return render_template('query.html',

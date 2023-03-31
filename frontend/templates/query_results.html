@@ -31,12 +31,14 @@
     <thead>
       <tr>
         <th>Name</th>
+        <th>Star</th>
       </tr>
     </thead>
     <tbody>
       {% for place in place_list %}
         <tr>
-          <td><a href={{url_for('query_bp.place',name=place )}}>{{ place }}</a></td>
+          <td><a href={{url_for('query_bp.place',name=place[0] )}}>{{ place[0] }}</a></td>
+          <td>{{ place[1] }}</a></td>
         </tr>
       {% endfor %}
     </tbody>
