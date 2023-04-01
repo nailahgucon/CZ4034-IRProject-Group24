@@ -1,6 +1,9 @@
+import json
+import math
 import re
 from flask import Blueprint, render_template, request
-from frontend.views.processes import spellcheck
+from frontend.views.processes import spellcheck, records
+import frontend.views.processes.records as records
 import requests
 from frontend.views.processes import plot
 import pickle
@@ -58,11 +61,41 @@ def query(page_name):
             return render_template('404.html')
     # results
     elif request.method == 'POST':
-        kwargs = {
-          'spellcheck': 'true',
-          }
+        kwargs = {}
         if page_name == "main":
-            return render_template('home.html')
+            # query 1 - proximity searches
+                # e.g. "price service"~10  -- search for "price" and "service"
+                #                          -- within 10 words of each other in a document,
+            # query 2 - boosting terms
+                # e.g. food^2 service      -- term "food" to be more relevant,
+                #                          -- boost it by adding the ^ symbol
+                #                          -- along with the boost factor.
+            query_term = request.form.get('place_name')
+            split_query = query_term.split(" ")
+            print(query_term)
+
+            # spellcheck only on review texts
+            if len(split_query) >1:
+                pass
+            else:
+                kwargs.update({'spellcheck': 'true',})
+            user_query = f"Review:{query_term}"
+
+            kwargs.update({"q": user_query,},)
+            results = requests.get(server_main,
+                                   params=kwargs).json()
+            # results = json.loads(results.text)["response"]["docs"]
+            # print(results)
+            res = results.get("response").get("docs")
+            myRecords = records()
+            myRecords.store(res)
+            
+            # for pagination, only display 10 records
+            totalPages = int(math.ceil(len(res) / 10))
+            displayResult = res[0:10]
+            
+            return render_template('results.html', docs=displayResult, current_page=1, total_pages=totalPages)
+  
         elif page_name == "sub":
             query_term = request.form.get('place_name')
             # query 1 - exact match                          # done
@@ -139,7 +172,27 @@ def query(page_name):
                 names2 = []
                 for i in res:
                     names.append([i.get("Name"), i.get("Star")])
-                if geo_filter:
+                if geo_filter and category:
+                    sort_field += "geodist() asc"
+                    lat = res[0].get("lat")
+                    lon = res[0].get("lon")
+                    field_query = f"(Category:'{category}')" + " AND {!geofilt}"
+                    kwargs.update({"q": "*:*",
+                                   "fq": field_query,
+                                   "sfield": "location",
+                                   "pt":f"{lat},{lon}",
+                                   "d":default_dist,
+                                   "sort": sort_field,
+                                   "fl":"{!func}geodist(),Name",
+                                   },
+                                )
+                    res2 = requests.get(server_sub,
+                                           params=kwargs).json()
+                    
+                    res2 = res2.get("response").get("docs")
+                    for i in res2[1:]:
+                        names2.append([i.get("Name"), i.get("{!func}geodist()")])
+                elif geo_filter:
                     # get 1st place
                     sort_field += "geodist() asc"
                     lat = res[0].get("lat")
@@ -159,7 +212,7 @@ def query(page_name):
                     res2 = res2.get("response").get("docs")
                     for i in res2[1:]:
                         names2.append([i.get("Name"), i.get("{!func}geodist()")])
-                if category:
+                elif category:
                     kwargs.update({"q": "*:*",
                                    "fq": f"Category:{category}",
                                    "sort": sort_field,
@@ -236,7 +289,7 @@ def place(name: str):
     
     return render_template("place.html", results_main=results_main[0],
                            results_reviews=results_reviews,
-                           results_mlt=results_mlt[1:])
+                           results_mlt=results_mlt)
 
 @query_bp.route('/plot_png')
 def plot_png():

@@ -5,8 +5,8 @@
   <h1>Results</h1>
   
   {% if suggtexts %}
-  <form id="spellCorrection" action="/query/main" method="GET">
-    <input type="hidden" name="content" value={{ suggtexts }}>
+  <form id="spellCorrection" action="{{ url_for('query_bp.query', page_name='main') }}" method="POST">
+    <input type="hidden" name="place_name" >
     <span>Do you want to seach <a onclick="submit()">{{ suggtexts }}</a> instead?</span>
   </form>
   {% endif %}
@@ -110,11 +110,11 @@
       {% for result in docs %}
       <tr>
         <td class="align-middle">{{loop.index}}</td>
-        <td class="align-middle">{{result.Name[0]}}</td>
-        <td class="align-middle">{{result.Category[0]}}</td>
-        <td class="align-middle">{{result.Style[0]}}</td>
+        <td class="align-middle">{{result.Name}}</td>
+        <td class="align-middle">{{result.Category}}</td>
+        <td class="align-middle">{{result['Style']}}</td>
         <td class="align-middle">{{result.Star[0]}}</td>
-        <td class="align-middle">{{result.Date[0]}}</td>
+        <td class="align-middle">{{result.Date}}</td>
         <td class="align-middle">{{result.Rating[0]}}</td>
         <td class="align-middle">{{result.ReviewTitle[0]}}</td>
         <td class="align-middle">{{result.Review[0]}}</td>       
