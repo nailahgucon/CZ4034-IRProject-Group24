@@ -213,6 +213,9 @@ def crawling():
     subprocess.call(['python', os.getcwd() + '\\crawling\\crawling_eateries.py'])
     subprocess.call(['python', os.getcwd() + '\\crawling\\crawling_hotels.py'])
 
+    # call model prediction
+    subprocess.call(['python', os.getcwd() + '\\sentiment\\model_predict.py'])
+
     # delete documents
     # import xml.etree.ElementTree as ET
 
