@@ -1,6 +1,7 @@
 class query():
     query = None
     style = None
+    
     @classmethod
     def storeQuery(cls, input):
         cls.query = input
@@ -8,6 +9,7 @@ class query():
     def getQuery(self):
         return self.query
     
+    @classmethod
     def storeStyle(cls, input):
         cls.style = input
     

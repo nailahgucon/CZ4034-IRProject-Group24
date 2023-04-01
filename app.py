@@ -35,29 +35,6 @@ mlt_url = "http://localhost:8983/solr/reviews/mlt"
 
 @app.route('/', methods=['GET'])
 def home():
-
-  # # Build Solr query
-  # query = {
-  #     "q": "*:*",
-  #     "fq": "*:*",
-  #     "rows": 100000,
-  #     "start": 0,
-  #     "mlt":"true",
-  #     "spellcheck.build": "true",
-  #     "spellcheck.reload": "true",
-  #     "spellcheck": "true",
-  #     "wt": "json"
-  # }
-  # URL = "http://localhost:8983/solr/reviews/select"
-  
-  # # Send Solr query
-  # response = requests.get(URL, params=query)
-  
-  # # Parse Solr results
-  # results = json.loads(response.text)["response"]["docs"]
-
-  # # myRcords = records.records()
-  # # myRcords.store(results)
   
   return render_template('home.html')
 
@@ -78,13 +55,14 @@ def getAllrecords():
   for i in distinctStyle:
     i["val"] = i["val"].replace("[",'').replace("]",'').replace("'",'')
   myQuery.storeStyle(distinctStyle)
+  print("distinct style ", myQuery.getStyle())
 
   # save the results to records class, don't change myRecords and totalPages.
   myRecords = records.records()
   myRecords.store(results)
   
   # for pagination, only display 10 records
-  totalPages = int(math.ceil(len(results) / 10))
+  totalPages = int(math.ceil(rawData["response"]["numFound"] / 10))
   displayResult = results[0:10]
   
   return render_template('results.html', docs=displayResult, distinctStyle=distinctStyle, current_page=1, total_pages=totalPages)
@@ -105,20 +83,23 @@ def query():
     
     # Parse Solr results
     rawData = json.loads(response.text)
-    results = rawData["response"]["docs"]
-    distinctStyle = rawData["facets"]["distinctStyle"]["buckets"]
-    for i in distinctStyle:
-      i["val"] = i["val"].replace("[",'').replace("]",'').replace("'",'')
-    myQuery.storeStyle(distinctStyle)
+    if rawData["response"]["numFound"] != 0:
+      results = rawData["response"]["docs"]
+      distinctStyle = rawData["facets"]["distinctStyle"]["buckets"]
+      for i in distinctStyle:
+        i["val"] = i["val"].replace("[",'').replace("]",'').replace("'",'')
+      myQuery.storeStyle(distinctStyle)
 
-    # save the results to records class
-    myRecords = records.records()
-    myRecords.store(results)
-    
-    # for pagination, only display 10 records
-    totalPages = int(math.ceil(len(results) / 10))
-    displayResult = results[0:10]
-
+      # save the results to records class
+      myRecords = records.records()
+      myRecords.store(results)
+      # for pagination, only display 10 records
+      totalPages = int(math.ceil(rawData["response"]["numFound"] / 10))
+      displayResult = results[0:10]
+    else:
+      displayResult = []
+      distinctStyle = []
+      totalPages = 0
 
     return render_template('results.html', docs=displayResult, distinctStyle=distinctStyle, current_page=1, total_pages=totalPages)
   else:
@@ -151,57 +132,74 @@ def filter():
 
     myRecords = records.records()
     myQuery = savedQuery.query()
-    f = "fq:"
+    num = 0
+    
+    f = "&fq="
 
     # type cast the star filter
     style_filter = request.values.get('style')
+    if style_filter:
+       num+=1
+       f+=f"Style:{style_filter}"
 
     # type cast the star filter
     star_filter = request.values.get('star')
     formatted_star = None
     if star_filter:
       formatted_star = int(star_filter[0])
-      f+=f"Star:{formatted_star} "
+      if num>0:
+         f+=f"&Star:{formatted_star}"
+      else:
+        f+=f"Star:{formatted_star}"
+      num+=1
 
     # type cast the rating filter
     rating_filter = request.values.get('rating')
     formatted_rating = None
     if rating_filter:
       formatted_rating = int(rating_filter[0])
-      f+=f"Rating:{formatted_rating} "
+      if num>0:
+        f+=f"&Rating:{formatted_rating}"
+      else:
+        f+=f"Rating:{formatted_rating}"
+      num+=1
 
     # type cast the date filter
     start_date_filter = request.values.get('startDate')
     end_date_filter = request.values.get('endDate')
-    formatted_start_date = None
-    formatted_end_date = None
     if start_date_filter and end_date_filter:
-      start_date_obj = datetime.strptime(start_date_filter, '%Y-%m-%d')
-      end_date_obj = datetime.strptime(end_date_filter, '%Y-%m-%d')
-      formatted_start_date = datetime.strptime(start_date_obj.strftime('%Y-%m-%dT%H:%M:%SZ'),'%Y-%m-%dT%H:%M:%SZ')
-      formatted_end_date = datetime.strptime(end_date_obj.strftime('%Y-%m-%dT%H:%M:%SZ'),'%Y-%m-%dT%H:%M:%SZ')
-      f+=f'Date:["{formatted_start_date}" TO "{formatted_end_date}"]'
+      num+=1
+      if num>0:
+        f+=f'&Date:["{start_date_filter}T00:00:00Z" TO "{end_date_filter}T00:00:00Z"]'
+      else:
+        f+=f'Date:["{start_date_filter}T00:00:00Z" TO "{end_date_filter}T00:00:00Z"]'    
     
-    print("filter ", f)
-    
-    # URL = defaultURL%(myQuery.getQuery())
 
-    # actual filter
-    # if formatted_rating and formatted_start_date and formatted_end_date and style_filter and formatted_star:
-    #    pass
-    # elif formatted_rating and formatted_start_date and formatted_end_date:
-    #   result = myRecords.filterByDateAndRating(formatted_start_date, formatted_end_date, formatted_rating)
-    # elif formatted_rating:
-    #   result = myRecords.filterByRating(formatted_rating)
-    # elif formatted_start_date and formatted_end_date:
-    #   result = myRecords.filterByDate(formatted_start_date, formatted_end_date)   
-    # else:
-    result = myRecords.getAllRecords() 
-    
-    totalPages = int(math.ceil(len(result) / 10))
-    displayResult = result[0:10]
+    URL = defaultURL%(myQuery.getQuery()+f)
 
-    return render_template('results.html', docs = displayResult, current_page=1, total_pages=totalPages)
+    # Send Solr query
+    response = requests.get(URL)
+    
+    # Parse Solr results
+    rawData = json.loads(response.text)
+    if rawData["response"]["numFound"] != 0:
+      results = rawData["response"]["docs"]
+      distinctStyle = rawData["facets"]["distinctStyle"]["buckets"]
+      for i in distinctStyle:
+        i["val"] = i["val"].replace("[",'').replace("]",'').replace("'",'')
+      myQuery.storeStyle(distinctStyle)
+
+      # save the results to records class
+      myRecords.store(results)
+    else:
+      results = []
+      distinctStyle = myQuery.getStyle()
+    
+    # for pagination, only display 10 records
+    totalPages = int(math.ceil(rawData["response"]["numFound"] / 10))
+    displayResult = results[0:10]
+
+    return render_template('results.html', docs = displayResult, distinctStyle=distinctStyle, current_page=1, total_pages=totalPages)
   else:
     return render_template('home.html')
 
