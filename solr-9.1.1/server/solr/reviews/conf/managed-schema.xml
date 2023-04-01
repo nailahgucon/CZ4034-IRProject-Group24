@@ -453,10 +453,10 @@
       <tokenizer name="whitespace"/>
     </analyzer>
   </fieldType>
-  <field name="Category" type="text_general" termVectors="true" indexed="true" required="false" stored="true" multiValued="true"/>
-  <field name="Date" type="text_general" termVectors="true" indexed="true" required="false" stored="true" multiValued="true"/>
+  <field name="Category" type="text_general" termVectors="true" indexed="true" required="false" stored="true" multiValued="false"/>
+  <field name="Date" type="text_general" termVectors="true" indexed="true" required="false" stored="true" multiValued="false"/>
   <field name="Style" type="text_general" termVectors="true" indexed="true" required="false" stored="true" multiValued="true"/>
-  <field name="Name" type="text_general" termVectors="true" indexed="true" required="false" stored="true" multiValued="true"/>
+  <field name="Name" type="text_general" termVectors="true" indexed="true" required="false" stored="true" multiValued="false"/>
   <field name="Rating" type="plongs"/>
   <field name="Review" type="text_general" termVectors="true" indexed="true" required="false" stored="true" multiValued="true"/>
   <field name="ReviewTitle" type="text_general" termVectors="true" indexed="true" required="false" stored="true" multiValued="true"/>
