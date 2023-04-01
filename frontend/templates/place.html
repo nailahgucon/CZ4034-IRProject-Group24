@@ -1,22 +1,21 @@
 {% extends "base.html" %}
 
 {% block content %}
-Name+Style+Star+location reviews rating review title
-    <p class="navigation"> Quick navigation <span>&#128640;</span></p>
+    <div class="place-details">
+        <h1>{{ results_main['Name'] }}</h1>
+    </div>
+
+    <h3 class="navigation"> Quick navigation <span>&#128640;</span></h3>
     <ul class="navigation" id="place-navigation">
         <a href="#background-info">Information</a>
         <a href="#reviews">Reviews</a>
         <a href="#navigation">Map Navigation</a>
         <a href="#more-like-this">More like this</a></ul>
-    
-    <div class="place-details">
-        <h1>{{ results_main['Name'] }}</h1></div>
-
 
     <div id="background-info">
         <div class="float-container">
             <div class="side-by-side-info">
-                <h2 class="heading">Star</h2>
+                <h2 class="heading">{{ results_main['Category'] }} Rating</h2>
             </div>
             <div class="side-by-side-info">
                 <p class="info">
@@ -25,15 +24,11 @@ Name+Style+Star+location reviews rating review title
             </div>
 
             <div class="side-by-side-info">
-                <h2 class="heading">Style</h2>
+                <h2 class="heading">Style and Atmosphere</h2>
             </div>
             <div class="side-by-side-info">
                 <p class="info">
-                    <ul>
-                        {% for style in results_main['Style'] %}
-                            <li>{{ style }}</li>
-                        {% endfor %}
-                    </ul>
+                    {{ results_main['Style'][0] }}
                 </p>
             </div>
 
@@ -80,6 +75,7 @@ Name+Style+Star+location reviews rating review title
             </div>
             <div class="side-by-side-info">
                 <p class="info">
+                    <img src= {{url_for('query_bp.plot_png' )}} alt="my plot">
                 </p>
             </div>
         </div>

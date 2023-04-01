@@ -2,6 +2,12 @@ import re
 from flask import Blueprint, render_template, request
 from frontend.views.processes import spellcheck
 import requests
+from frontend.views.processes import plot
+import pickle
+
+import io
+from flask import Response
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 
 server_main:str = "http://localhost:8983/solr/reviews/select"
 server_sub:str = "http://localhost:8983/solr/all_data/select"
@@ -14,8 +20,6 @@ server_sub:str = "http://localhost:8983/solr/all_data/select"
 # http://localhost:8983/solr/reviews/select?q=Review:%22lovely%20food%22^4%20ambience
 
 
-# TODO ind pages        # scatter plot of map with of distances
-# TODO page layout
 # TODO clean up code
 
 places = requests.get(server_sub, params={
@@ -42,8 +46,6 @@ query_bp = Blueprint('query_bp', __name__, url_prefix='/query')
 
 @query_bp.route('/<page_name>', methods=['GET', 'POST'])
 def query(page_name):
-    # autocomplete for only hotel and eatery names
-    # availableTags = list(set(db.get_names))
 
     # Search page
     if request.method == 'GET':
@@ -197,6 +199,9 @@ def place(name: str):
     results_mlt=results_main.get("moreLikeThis")
     results_mlt=results_mlt.get(list(results_mlt)[0]).get("docs")
     results_main=results_main.get("response").get("docs")
+    lat = results_main[0].get("lat")
+    lon = results_main[0].get("lon")
+    default_dist = 10
     
 
     kwargs = {
@@ -209,6 +214,34 @@ def place(name: str):
     
     results_reviews=results_reviews.get("response").get("docs")
 
+    sort_field = "geodist() asc"
+
+    kwargs = {
+          'spellcheck': 'true',
+          }
+    kwargs.update({"q": "*:*",
+                    "fq": "{!geofilt}",
+                    "sfield": "location",
+                    "pt":f"{lat},{lon}",
+                    "d":default_dist,
+                    "sort": sort_field,
+                    "fl":"location,Name",
+                    },
+                )
+    res2 = requests.get(server_sub,
+                            params=kwargs).json()
+    
+    res2 = res2.get("response").get("docs")
+    plot(res2)
+    
     return render_template("place.html", results_main=results_main[0],
                            results_reviews=results_reviews,
                            results_mlt=results_mlt[1:])
+
+@query_bp.route('/plot_png')
+def plot_png():
+    figx = pickle.load(open('frontend/views/plots/dist.fig.pickle', 'rb'))
+    output = io.BytesIO()
+
+    FigureCanvas(figx).print_png(output)
+    return Response(output.getvalue(), mimetype='image/png')
