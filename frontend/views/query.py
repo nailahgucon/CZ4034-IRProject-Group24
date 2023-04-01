@@ -1,16 +1,7 @@
 import re
 from flask import Blueprint, render_template, request
-from typing import List
-from backend.place import Place
-from frontend.views.processes import autocomplete
 from frontend.views.processes import spellcheck
 import requests
-import spacy
-
-import pickle
-
-from backend import Places
-from backend import Response
 
 server_main:str = "http://localhost:8983/solr/reviews/select"
 server_sub:str = "http://localhost:8983/solr/all_data/select"
@@ -23,31 +14,18 @@ server_sub:str = "http://localhost:8983/solr/all_data/select"
 # http://localhost:8983/solr/reviews/select?q=Review:%22lovely%20food%22^4%20ambience
 
 
-nlp = spacy.load("en_core_web_sm")
+# TODO ind pages        # scatter plot of map with of distances
+# TODO page layout
+# TODO clean up code
 
-# get all objects
-with open("backend/data/place.pkl", 'rb') as inp:
-    s = pickle.load(inp)
+places = requests.get(server_sub, params={
+    "q":"*:*",
+    "rows": "500",
+    "fl": "Name"
+}).json()
+places = places.get("response").get("docs")
+places = [i.get("Name") for i in places]
 
-db = Places()
-db.extend(s)
-
-# TODO rank query results
-# TODO top-k "best eateries/best hotels"
-
-places: List[str] = db.get_names
-mlt_field = "Style"
-kwargs = {'spellcheck.build': "true",
-          'spellcheck.reload': "true",
-          'spellcheck': 'true',
-          'mlt':'true',
-          'mlt.fl': mlt_field,
-          'mlt.interestingTerms':'details',
-          'mlt.match.include': 'true',
-          'mlt.mintf': '0',
-          'mlt.mindf': '0',
-          'rows': 10,
-          }
 
 NEAR_WORDS = ["near", "nearer", "close", "around"]
 
@@ -65,29 +43,21 @@ query_bp = Blueprint('query_bp', __name__, url_prefix='/query')
 @query_bp.route('/<page_name>', methods=['GET', 'POST'])
 def query(page_name):
     # autocomplete for only hotel and eatery names
-    availableTags = list(set(db.get_names))
+    # availableTags = list(set(db.get_names))
 
     # Search page
     if request.method == 'GET':
         if page_name == "main":
             return render_template('home.html')
         elif page_name == "sub":
-            # TODO: autocomplete done
             return render_template('query.html',
-                                   availableTags=availableTags)
+                                   availableTags=places)
         else:
             return render_template('404.html')
     # results
     elif request.method == 'POST':
-        kwargs = {'spellcheck.build': "true",
-          'spellcheck.reload': "true",
+        kwargs = {
           'spellcheck': 'true',
-          'mlt':'true',
-          'mlt.fl': mlt_field,
-          'mlt.interestingTerms':'details',
-          'mlt.match.include': 'true',
-          'mlt.mintf': '0',
-          'mlt.mindf': '0',
           }
         if page_name == "main":
             return render_template('home.html')
@@ -103,10 +73,9 @@ def query(page_name):
                 # e.g. top eateries near Parkroyal Hotel 
                 # e.g. top 5 eateries near Parkroyal  
                 # e.g. top eateries 
-            # special query 3 - More like this
+            # special query 3 - More like this              # done
             category = None
             rank = None
-            k = 100
             geo_filter = False
             split_query = query_term.split(" ")
             res2 = []
@@ -166,6 +135,8 @@ def query(page_name):
             elif len(res) >= 1:
                 names = []
                 names2 = []
+                for i in res:
+                    names.append([i.get("Name"), i.get("Star")])
                 if geo_filter:
                     # get 1st place
                     sort_field += "geodist() asc"
@@ -185,7 +156,7 @@ def query(page_name):
                     
                     res2 = res2.get("response").get("docs")
                     for i in res2[1:]:
-                        names2.append([i.get("Name")[0], i.get("{!func}geodist()")])
+                        names2.append([i.get("Name"), i.get("{!func}geodist()")])
                 if category:
                     kwargs.update({"q": "*:*",
                                    "fq": f"Category:{category}",
@@ -196,14 +167,10 @@ def query(page_name):
                                            params=kwargs).json()
                     
                     res = res2.get("response").get("docs")
-                for i in res:
-                    names.append([i.get("Name")[0], i.get("Star")])
+                
                 return render_template('query_results.html',
                                        place_list=names, other_matches=names2)
-            else:
-                print("Could not find, try filtering instead?")
-            return render_template('query.html',
-                                   availableTags=availableTags)
+            return "Uh oh, could not find any results, please try again."
         else:
             return render_template('404.html')
 
@@ -212,27 +179,36 @@ def place(name: str):
     '''
     creates a single place page
     '''
+    kwargs = {
+          'spellcheck': 'true',
+          }
     name_ = re.sub('[^0-9a-zA-Z]+', '_', name)
     query_name = re.sub('[^0-9a-zA-Z]+', ' ', name)
     name_ = name_.lower()
-    kwargs.update({"q": f"spellCheck:{query_name}",
-                   "sort": ''})
-    results = requests.get(server_main,
+    kwargs.update({"q": f"spellCheck:\"{query_name}\"",
+                   "mlt":"true",
+                   "mlt.fl": "Style",
+                   "mlt.match.include": "true",
+                   "mlt.mindf":"0",
+                   "mlt.mintf":"0",
+                   })
+    results_main = requests.get(server_sub,
                             params=kwargs).json()
-    results=results.get("response").get("docs")
-    responses = []
-    for i in results:
-        style = i.get("Style")
-        if style:
-            style = style[0]
-        responses.append(Response(
-            name=i.get("Name")[0],
-            style=style,
-            category=i.get("Category")[0],
-            star=i.get("Star")[0],
-            date=i.get("Date")[0],
-            rating=i.get("Rating")[0],
-            reviewstitles=i.get("ReviewTitle")[0],
-            reviews=i.get("Review")[0]
-        ))
-    return render_template("place.html", responses=responses)
+    results_mlt=results_main.get("moreLikeThis")
+    results_mlt=results_mlt.get(list(results_mlt)[0]).get("docs")
+    results_main=results_main.get("response").get("docs")
+    
+
+    kwargs = {
+          'spellcheck': 'true',
+          }
+    kwargs.update({"q": f"spellCheck:\"{query_name}\"",
+                   })
+    results_reviews = requests.get(server_main,
+                            params=kwargs).json()
+    
+    results_reviews=results_reviews.get("response").get("docs")
+
+    return render_template("place.html", results_main=results_main[0],
+                           results_reviews=results_reviews,
+                           results_mlt=results_mlt[1:])

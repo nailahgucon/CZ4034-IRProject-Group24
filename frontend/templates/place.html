@@ -1,25 +1,26 @@
 {% extends "base.html" %}
 
 {% block content %}
+Name+Style+Star+location reviews rating review title
     <p class="navigation"> Quick navigation <span>&#128640;</span></p>
     <ul class="navigation" id="place-navigation">
-        <a href="#background-info">Background</a>
+        <a href="#background-info">Information</a>
         <a href="#reviews">Reviews</a>
         <a href="#navigation">Map Navigation</a>
         <a href="#more-like-this">More like this</a></ul>
     
     <div class="place-details">
-        <h1>{{ responses.name }}</h1></div>
+        <h1>{{ results_main['Name'] }}</h1></div>
 
 
     <div id="background-info">
         <div class="float-container">
             <div class="side-by-side-info">
-                <h2 class="heading">Category</h2>
+                <h2 class="heading">Star</h2>
             </div>
             <div class="side-by-side-info">
                 <p class="info">
-                {{ (responses.category) }}
+                {{ results_main['Star'] }}
                 </p>
             </div>
 
@@ -29,7 +30,7 @@
             <div class="side-by-side-info">
                 <p class="info">
                     <ul>
-                        {% for style in responses.style %}
+                        {% for style in results_main['Style'] %}
                             <li>{{ style }}</li>
                         {% endfor %}
                     </ul>
@@ -57,12 +58,12 @@
                         </tr>
                         </thead>
                         <tbody>
-                        {% for res in responses %}
+                        {% for res in results_reviews %}
                             <tr>
-                            <td>{{ res.date }}</td>
-                            <td>{{ res.reviewstitles }}</td>
-                            <td>{{ res.reviews }}</td>
-                            <td>{{ res.rating }}</td>
+                            <td>{{ res['Date'] }}</td>
+                            <td>{{ res['ReviewTitle'][0] }}</td>
+                            <td>{{ res['Review'][0] }}</td>
+                            <td>{{ res['Rating'][0] }}</td>
                             </tr>
                         {% endfor %}
                         </tbody>
@@ -85,13 +86,32 @@
     </div>
 
     <div id="more-like-this">
-        <div class="float-container">
-            <div class="side-by-side-info">
-                <h2 class="heading">More like this</h2>
-            </div>
-            <div class="side-by-side-info">
-                
-            </div>
+        <div class="side-by-side-info">
+            <h2 class="heading">More like this</h2>
+        </div>
+        <div class="side-by-side-info">
+            <p class="info">
+                <table class="table responses-publications">
+                    <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Style</th>
+                        <th>Star</th>
+                        <th>Location</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for res in results_mlt %}
+                        <tr>
+                        <td><a href={{url_for('query_bp.place',name=res['Name'] )}}>{{ res['Name'] }}</a></td>
+                        <td>{{ res['Style'][0] }}</td>
+                        <td>{{ res['Star'] }}</td>
+                        <td>{{ res['location'] }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </p>
         </div>
     </div>
 
