@@ -6,7 +6,7 @@ import time
 import os
 
 # default path to file to store data
-path_to_file = os.getcwd() + "\\crawling\\links_eateries.csv"
+path_to_file = os.getcwd() + "\\crawling\\links_eateries_withDups.csv"
 
 # default number of scraped pages
 num_page = 1

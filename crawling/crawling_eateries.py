@@ -4,12 +4,27 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 import time
 import os
+import pandas as pd
+from datetime import datetime
 
 # default path to file to store data
 path_to_file = os.getcwd() + "\\reviews_combined.csv"
 
 # default number of scraped pages
 num_page = 1
+
+# -------- handle "sponsored" eateries duplicates -------- 
+# Load CSV file into a Pandas DataFrame
+df = pd.read_csv(os.getcwd() + "\\crawling\\links_eateries_withDups.csv", header=None)
+
+# Drop duplicate values in the first column
+df.drop_duplicates(subset=df.columns[0], inplace=True)
+
+# Write the updated DataFrame back to a new CSV file
+df.to_csv(os.getcwd() + "\\crawling\\links_eateries.csv", header=False, index=False)
+
+# Remove file with duplicates from directory
+os.remove(os.getcwd() + "\\crawling\\links_eateries_withDups.csv")
 
 with open('crawling\\links_eateries.csv', 'r') as file:
     reader = csv.reader(file)
@@ -72,7 +87,8 @@ with open('crawling\\links_eateries.csv', 'r') as file:
         # Open the file to save the review
         csvFile = open(path_to_file, 'a', encoding="utf-8", newline='')
         csvWriter = csv.writer(csvFile)
-        # csvWriter.writerow(["Name","Category","Style","Star","Date", "Rating", "ReviewTitle", "Review"]) 
+        if os.stat(os.getcwd() + "\\reviews_combined.csv").st_size == 0:
+            csvWriter.writerow(["Name","Category","Style","Star","Date", "Rating", "ReviewTitle", "Review"])  
 
         # change the value inside the range to save more or less reviews
         for i in range(0, num_page):
@@ -95,8 +111,10 @@ with open('crawling\\links_eateries.csv', 'r') as file:
                     date = container[j].find_element(By.XPATH, ".//div[@class='prw_rup prw_reviews_stay_date_hsx']").text.replace("Date of visit: ","")
                     rating = int(container[j].find_element(By.XPATH, ".//span[contains(@class, 'ui_bubble_rating bubble_')]").get_attribute("class").split("_")[3])/10
                     review = container[j].find_element(By.XPATH, ".//p[@class='partial_entry']").text.replace("\n", " ")
+                    date_obj = datetime.strptime(date, '%B %Y')
+                    date_formatted = date_obj.strftime('%Y-%m-%d')
 
-                    csvWriter.writerow([name, "Eatery", eStyle, eStar, date, rating, title, review]) 
+                    csvWriter.writerow([name, "Eatery", eStyle, eStar, date_formatted, rating, title, review]) 
                 except:
                     continue
             

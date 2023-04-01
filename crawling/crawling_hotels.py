@@ -4,6 +4,8 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 import time
 import os
+import pandas as pd
+from datetime import datetime
 
 # default path to file to store data
 path_to_file = os.getcwd() + "\\reviews_combined.csv"
@@ -11,7 +13,18 @@ path_to_file = os.getcwd() + "\\reviews_combined.csv"
 # default number of scraped pages
 num_page = 1
 
-# default tripadvisor website of hotel
+# -------- handle "sponsored" eateries duplicates -------- 
+# Load CSV file into a Pandas DataFrame
+df = pd.read_csv(os.getcwd() + "\\crawling\\links_hotels_withDups.csv", header=None)
+
+# Drop duplicate values in the first column
+df.drop_duplicates(subset=df.columns[0], inplace=True)
+
+# Write the updated DataFrame back to a new CSV file
+df.to_csv(os.getcwd() + "\\crawling\\links_hotels.csv", header=False, index=False)
+
+# Remove file with duplicates from directory
+os.remove(os.getcwd() + "\\crawling\\links_hotels_withDups.csv")
 
 with open('crawling\\links_hotels.csv', 'r') as file:
     reader = csv.reader(file)
@@ -45,7 +58,8 @@ with open('crawling\\links_hotels.csv', 'r') as file:
         # open the file to save the review
         csvFile = open(path_to_file, 'a', encoding="utf-8", newline='')
         csvWriter = csv.writer(csvFile)
-        # csvWriter.writerow(["Name","Category","Style","Star","Date", "Rating", "ReviewTitle", "Review"]) 
+        if os.stat(os.getcwd() + "\\reviews_combined.csv").st_size == 0:
+            csvWriter.writerow(["Name","Category","Style","Star","Date", "Rating", "ReviewTitle", "Review"]) 
 
         # change the value inside the range to save more or less reviews
         for i in range(0, num_page):
@@ -64,10 +78,12 @@ with open('crawling\\links_hotels.csv', 'r') as file:
                 try:
                     rating = int(container[j].find_element(By.XPATH, ".//span[contains(@class, 'ui_bubble_rating bubble_')]").get_attribute("class").split("_")[3])/10
                     title = container[j].find_element(By.XPATH, ".//div[contains(@data-test-target, 'review-title')]").text
-                    review = container[j].find_element(By.XPATH, ".//q[@class='QewHA H4 _a']").text.replace("\n", "  ")
+                    review = container[j].find_element(By.XPATH, ".//span[@class='QewHA H4 _a']").text.replace("\n", "  ") # site changed to from q to span on 29/3/2023
                     date = container[j].find_element(By.XPATH, ".//span[@class='teHYY _R Me S4 H3']").text.replace("Date of stay: ","")
+                    date_obj = datetime.strptime(date, '%B %Y')
+                    date_formatted = date_obj.strftime('%Y-%m-%d')
                 
-                    csvWriter.writerow([name, "Hotel", hStyle, hClass, date, rating, title, review]) 
+                    csvWriter.writerow([name, "Hotel", hStyle, hClass, date_formatted, rating, title, review]) 
                 except:
                     continue
                 
