@@ -102,7 +102,7 @@
                     {% for res in results_mlt %}
                         <tr>
                         <td><a href={{url_for('query_bp.place',name=res['Name'] )}}>{{ res['Name'] }}</a></td>
-                        <td>{{ res['Style'] }}</td>
+                        <td>{{ res['Style'][0] }}</td>
                         <td>{{ res['Star'] }}</td>
                         <td>{{ res['location'] }}</td>
                         </tr>

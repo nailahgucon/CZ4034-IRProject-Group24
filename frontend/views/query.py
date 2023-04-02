@@ -171,7 +171,7 @@ def query(page_name):
                 for i in res:
                     names.append([i.get("Name"), i.get("Star")])
                 if geo_filter and category:
-                    sort_field += "geodist() asc"
+                    sort_field = "geodist() asc,Star desc"
                     lat = res[0].get("lat")
                     lon = res[0].get("lon")
                     field_query = f"(Category:'{category}')" + " AND {!geofilt}"
