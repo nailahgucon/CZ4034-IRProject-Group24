@@ -35,7 +35,7 @@ bin/post -c all_data data/all_data.csv
 
 ## Delete all Data
 XML:
-"<delete><query>\*:\*</query></delete>"
+https://stackoverflow.com/questions/7722508/how-to-delete-all-data-from-solr-and-hbase/7722558#7722558 
 
 ## To start this app, run:
 1. Ensure you are in the root folder e.g. CZ4034-IRProject-Group24 then
