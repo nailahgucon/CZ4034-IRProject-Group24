@@ -84,8 +84,6 @@ def query(page_name):
             kwargs.update({"q": user_query,},)
             results = requests.get(server_main,
                                    params=kwargs).json()
-            # results = json.loads(results.text)["response"]["docs"]
-            # print(results)
             res = results.get("response").get("docs")
             myRecords = records()
             myRecords.store(res)

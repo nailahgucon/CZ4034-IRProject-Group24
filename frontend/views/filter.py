@@ -3,31 +3,14 @@ import math
 from flask import Flask, render_template, request
 from datetime import datetime
 import frontend.views.processes as records
-import requests
 from flask import Blueprint, render_template
 
-from typing import List
-
-import pickle
-
-from backend import Places
-
-with open("backend/data/place.pkl", 'rb') as inp:
-    s = pickle.load(inp)
-
-db = Places()
-db.extend(s)
-
-places: List[str] = db.get_names
 
 filter_bp = Blueprint('filter_bp', __name__, url_prefix='/filter')
 
 @filter_bp.route('/', methods=['GET'])
 def filter():
   if request.method == 'GET':
-    print(db.get_unique_styles())
-            # ['Restaurants', 'Residential Neighborhood', 'Bay View', 'Vegetarian Friendly', 'Marina View', 'Gluten Free Options', 'Centrally Located', 'Mid-range', 'Vegan Options', 'Trendy', 'Family', 'Park View']
-            
     myRecords = records.records()
 
     # type cast the rating filter

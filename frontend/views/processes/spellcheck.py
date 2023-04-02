@@ -8,10 +8,6 @@ def spellcheck(res) -> Tuple[bool, str, str]:
     '''
     # TODO error spellchecking on multiple words
     # TODO error spellchecking on long terms
-    print(res)
-    print("0______")
-    # print(res["spellcheck"])
-    # spellCheck = res["spellcheck"].get["collations"]
     correct_terms = []
     typo_terms = []
     collation_queries = []

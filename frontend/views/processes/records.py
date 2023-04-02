@@ -16,7 +16,7 @@ class records():
     def filterByRating(self, rating):
       result = []
       for i in self.docs:
-        if i["Rating"] == rating:
+        if float(i["Rating"][0]) == float(rating):
           result.append(i)
 
       self.displayDocs = result
@@ -25,7 +25,7 @@ class records():
     def filterByDate(self, start_date, end_date):
       result = []
       for i in self.docs:
-        date = datetime.strptime(i["Date"][0], '%B %d, %Y')
+        date = datetime.strptime(i["Date"], '%B %d, %Y')
         
         if date >= start_date and date <= end_date:
           result.append(i)
@@ -39,7 +39,6 @@ class records():
         date = datetime.strptime(i["Date"][0], '%B %d, %Y')
         if date >= start_date and date <= end_date and i["Rating"] == rating:
           result.append(i)
-      
       self.displayDocs.append(i)
       return self.displayDocs
     
