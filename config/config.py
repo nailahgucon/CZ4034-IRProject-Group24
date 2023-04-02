@@ -26,7 +26,7 @@ review_header = ["Name","Category","Style",
 all_data_header = ["Name","Category","Style",
                    "Star","lat","lon"]
 
-API_KEY = 'AIzaSyCEl2l5qFEY-Qf1_VjelMlooH5PjTgOdhM'  # your API key here
+API_KEY = ''  # your API key here
 
 
 NEAR_WORDS = ["near", "nearer", "close", "around"]
