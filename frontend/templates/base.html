@@ -85,10 +85,10 @@
       <a href="{{url_for('home_bp.home')}}"><img src="/static/checkMaster2.png" alt="checkMaster logo"
           style="width:187px;height:55px;"></a>
   
-        <form class="d-flex" role="search" action="{{ url_for('query_bp.query', page_name='main') }}" method="GET">
-            <input class="form-control me-2" type="search" placeholder="Search" name="content" id="content">
-      <!-- <form class="d-flex" role="search" action="{{ url_for('query_bp.query', page_name='main') }}" method="POST"> -->
-        <!-- <input class="form-control me-2" type="search" placeholder="Search" name="place_name" id="content"> -->
+        <!-- <form class="d-flex" role="search" action="{{ url_for('query_bp.query', page_name='main') }}" method="GET">
+            <input class="form-control me-2" type="search" placeholder="Search" name="content" id="content"> -->
+      <form class="d-flex" role="search" action="{{ url_for('query_bp.query', page_name='main') }}" method="POST">
+        <input class="form-control me-2" type="search" placeholder="Search" name="place_name" id="content">
         <button class="btn btn-outline-success" type="submit">Search</button>
       </form>
         <!-- <form action="/query" method="GET" >

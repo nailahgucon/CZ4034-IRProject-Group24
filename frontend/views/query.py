@@ -2,8 +2,8 @@ import json
 import math
 import re
 from flask import Blueprint, render_template, request
-from frontend.views.processes import spellcheck, records
-import frontend.views.processes.records as records
+from frontend.views.processes import savedQuery, spellcheck, records
+# from frontend.views.processes.records as records
 import requests
 from frontend.views.processes import plot
 import pickle
@@ -44,6 +44,8 @@ FILTER_WORDS_BOT = ["worst", "worse", "least", "bad", "bottom"]
 
 WORDS = NEAR_WORDS+CAT_EATERY+CAT_HOTEL+FILTER_WORDS_TOP+FILTER_WORDS_BOT
 
+defaultURL = "http://localhost:8983/solr/reviews/select?q=%s&facet.field={!key=distinctStyle}distinctStyle&facet=on&rows=10000&wt=json&json.facet={distinctStyle:{type:terms,field:distinctStyle,limit:10000,missing:false,sort:{index:asc},facet:{}}}"
+
 query_bp = Blueprint('query_bp', __name__, url_prefix='/query')
 
 
@@ -53,7 +55,7 @@ def query(page_name):
     # Search page
     if request.method == 'GET':
         if page_name == "main":
-            return render_template('home.html')
+            return render_template('results.html')
         elif page_name == "sub":
             return render_template('query.html',
                                    availableTags=places)
@@ -72,7 +74,6 @@ def query(page_name):
                 #                          -- along with the boost factor.
             query_term = request.form.get('place_name')
             split_query = query_term.split(" ")
-            print(query_term)
 
             # spellcheck only on review texts
             if len(split_query) >1:
