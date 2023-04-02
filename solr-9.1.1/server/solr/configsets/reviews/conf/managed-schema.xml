@@ -459,7 +459,7 @@
     </analyzer>
   </fieldType>
   <field name="Category" type="text_general" termVectors="true" indexed="true" required="false" stored="true" multiValued="false"/>
-  <field name="Date" type="text_general" termVectors="true" indexed="true" required="false" stored="true" multiValued="false"/>
+  <field name="Date" type="pdates" indexed="true" required="false" stored="true"/>
   <field name="Style" type="text_general" termVectors="true" indexed="true" required="false" stored="true" multiValued="false"/>
   <field name="Name" type="text_general" termVectors="true" indexed="true" required="false" stored="true" multiValued="false"/>
   <field name="Rating" type="text_general" indexed="true" required="false" stored="true" multiValued="false"/>

@@ -1,12 +1,11 @@
 import json
 import math
-from flask import Flask, render_template, request
-from datetime import datetime
-import frontend.views.processes as records
+
 import requests
 from flask import Blueprint, render_template
-from frontend.views.processes import savedQuery
 
+import frontend.views.processes as records
+from frontend.views.processes import savedQuery
 
 records_bp = Blueprint('records_bp', __name__)
 

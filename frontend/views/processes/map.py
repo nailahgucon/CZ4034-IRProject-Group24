@@ -14,9 +14,6 @@ def plot(list_places):
         loc_ = i.split(",")
         lat.append(float(loc_[0]))
         lon.append(float(loc_[1]))
-    print(lat[:init_points])
-    print(lon[:init_points])
-    print("---")
     names = [i.get("Name") for i in list_places]
 
     fig, ax = plt.subplots()

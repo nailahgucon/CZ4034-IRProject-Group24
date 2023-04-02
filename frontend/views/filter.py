@@ -1,12 +1,12 @@
 import json
 import math
-from flask import Flask, render_template, request
 from datetime import datetime
-import requests
-import frontend.views.processes as records
-from flask import Blueprint, render_template
-from frontend.views.processes import savedQuery
 
+import requests
+from flask import Blueprint, Flask, render_template, request
+
+import frontend.views.processes as records
+from frontend.views.processes import savedQuery
 
 filter_bp = Blueprint('filter_bp', __name__, url_prefix='/filter')
 
@@ -62,9 +62,6 @@ def filter():
     # type cast the date filter
     start_date_filter = request.values.get('startDate')
     end_date_filter = request.values.get('endDate')
-    print(start_date_filter)
-    print(end_date_filter)
-    print("____-")
     if start_date_filter and end_date_filter:
       if num>0:
         f+=f'&Date:["{start_date_filter}T00:00:00Z" TO "{end_date_filter}T00:00:00Z"]'
@@ -75,7 +72,6 @@ def filter():
 
     URL = defaultURL%(myQuery.getQuery()+f)
 
-    # print("URL ", URL)
     # Send Solr query
     response = requests.get(URL)
 
