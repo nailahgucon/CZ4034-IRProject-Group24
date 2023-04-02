@@ -29,6 +29,14 @@ def filter():
        num+=1
        f+=f"Style:{style_filter}"
 
+    category_filter = request.values.get('category')
+    if category_filter:
+      if num>0:
+         f+=f"&Category:{category_filter}"
+      else:
+        f+=f"Category:{category_filter}"
+      num+=1
+
     # type cast the star filter
     star_filter = request.values.get('star')
     formatted_star = None
@@ -58,15 +66,16 @@ def filter():
     print(end_date_filter)
     print("____-")
     if start_date_filter and end_date_filter:
-      num+=1
       if num>0:
         f+=f'&Date:["{start_date_filter}T00:00:00Z" TO "{end_date_filter}T00:00:00Z"]'
       else:
         f+=f'Date:["{start_date_filter}T00:00:00Z" TO "{end_date_filter}T00:00:00Z"]'    
+      num+=1
 
 
     URL = defaultURL%(myQuery.getQuery()+f)
 
+    # print("URL ", URL)
     # Send Solr query
     response = requests.get(URL)
 
