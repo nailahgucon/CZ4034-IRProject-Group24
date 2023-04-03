@@ -44,7 +44,7 @@ FILTER_WORDS_BOT = ["worst", "worse", "least", "bad", "bottom"]
 
 WORDS = NEAR_WORDS+CAT_EATERY+CAT_HOTEL+FILTER_WORDS_TOP+FILTER_WORDS_BOT
 
-defaultURL = "http://localhost:8983/solr/reviews/select?q=%s&facet.field={!key=distinctStyle}distinctStyle&facet=on&rows=10000&wt=json&json.facet={distinctStyle:{type:terms,field:distinctStyle,limit:10000,missing:false,sort:{index:asc},facet:{}}}"
+defaultURL = "http://localhost:8983/solr/reviews/select?facet.field={!key=distinctStyle}distinctStyle&facet=on&rows=10000&wt=json&json.facet={distinctStyle:{type:terms,field:distinctStyle,limit:10000,missing:false,sort:{index:asc},facet:{}}}"
 
 query_bp = Blueprint('query_bp', __name__, url_prefix='/query')
 
@@ -83,17 +83,33 @@ def query(page_name):
             user_query = f"Review:{query_term}"
 
             kwargs.update({"q": user_query,},)
-            results = requests.get(server_main,
+            results = requests.get(defaultURL,
                                    params=kwargs).json()
             res = results.get("response").get("docs")
+            
+            if results["spellcheck"]["suggestions"]:
+                spellSuggestions = results.get("spellcheck").get("suggestions")[1]["suggestion"]
+            else:
+                spellSuggestions = []
+
+            if results["facets"]["count"]>0:
+                distinctStyle = results["facets"]["distinctStyle"]["buckets"]
+                for i in distinctStyle:
+                    i["val"] = i["val"].replace("[",'').replace("]",'').replace("'",'')
+                myQuery = savedQuery.query()
+                myQuery.storeStyle(distinctStyle)
+            else:
+                distinctStyle = []
+
             myRecords = records()
+
             myRecords.store(res)
             
             # for pagination, only display 10 records
             totalPages = int(math.ceil(len(res) / 10))
             displayResult = res[0:10]
             
-            return render_template('results.html', docs=displayResult, current_page=1, total_pages=totalPages)
+            return render_template('results.html', docs=displayResult, spellSuggestions=spellSuggestions, distinctStyle=distinctStyle, current_page=1, total_pages=totalPages)
   
         elif page_name == "sub":
             query_term = request.form.get('place_name')
