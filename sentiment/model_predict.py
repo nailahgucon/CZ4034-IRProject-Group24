@@ -104,7 +104,7 @@ def model_predict(filepath):
     df['Sentiment'] = df['Review_processed'].apply(predict_subjectivity, args=(tokenizer, subjectivity_model, lb))
 
     # predict polarity
-    with open(f'{os.getcwd()}/additional_data/seq_list', 'rb') as fp:
+    with open(f'{os.getcwd()}/sentiment/additional_data/seq_list', 'rb') as fp:
       seq_list = pickle.load(fp)
     tokenizer_obj = Tokenizer()
     tokenizer_obj.fit_on_texts(seq_list)
@@ -112,9 +112,9 @@ def model_predict(filepath):
     df_opiniated['Polarity'] = df_opiniated['Review_processed'].apply(predict_polarity, args=(tokenizer_obj, polarity_model))
 
     # merge ['neutral', 'opiniated'] with ['positive', 'negative']
-    df_merged = df.merge(df_opiniated, on=['Name', 'Category', 'Style', 'Star', 'Date', 'Rating', 'ReviewTitle', 'Review_processed_x', 'Review_processed_y'], how='left')
+    df_merged = df.merge(df_opiniated, on=['Name', 'Category', 'Style', 'Star', 'Date', 'Rating', 'ReviewTitle', 'Review'], how='left')
     df_merged['Sentiment'] = df_merged.apply(lambda row: row['Sentiment_x'] if row['Sentiment_x']=='neutral' else row['Polarity'], axis=1)
-    df_merged = df_merged.drop(columns=['Polarity', 'Sentiment_x', 'Sentiment_y'])
+    df_merged = df_merged.drop(columns=['Polarity', 'Sentiment_x', 'Sentiment_y', 'Review_processed_x', 'Review_processed_y'])
     df_merged = df_merged.loc[:, ~df_merged.columns.str.contains('^Unnamed')]
 
     # save file
