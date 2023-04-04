@@ -45,7 +45,7 @@ https://stackoverflow.com/questions/7722508/how-to-delete-all-data-from-solr-and
 
 ## Generate your google API key here:
 <br>
-`https://console.cloud.google.com/apis/credentials`
+https://console.cloud.google.com/apis/credentials
 
 ## To start this app, run:
 1. Ensure you are in the root folder e.g. CZ4034-IRProject-Group24 then
