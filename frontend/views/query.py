@@ -56,17 +56,33 @@ def query(page_name):
             user_query = f"Review:{query_term}"
 
             kwargs.update({"q": user_query,},)
-            results = requests.get(server_main,
+            results = requests.get(defaultquery,
                                    params=kwargs).json()
             res = results.get("response").get("docs")
+            
+            if results["spellcheck"]["suggestions"]:
+                spellSuggestions = results.get("spellcheck").get("suggestions")[1]["suggestion"]
+            else:
+                spellSuggestions = []
+
+            if results["facets"]["count"]>0:
+                distinctStyle = results["facets"]["distinctStyle"]["buckets"]
+                for i in distinctStyle:
+                    i["val"] = i["val"].replace("[",'').replace("]",'').replace("'",'')
+                myQuery = savedQuery.query()
+                myQuery.storeStyle(distinctStyle)
+            else:
+                distinctStyle = []
+
             myRecords = records()
+
             myRecords.store(res)
             
             # for pagination, only display 10 records
             totalPages = int(math.ceil(len(res) / 10))
             displayResult = res[0:10]
             
-            return render_template('results.html', docs=displayResult, current_page=1, total_pages=totalPages)
+            return render_template('results.html', docs=displayResult, spellSuggestions=spellSuggestions, distinctStyle=distinctStyle, current_page=1, total_pages=totalPages)
   
         elif page_name == "sub":
             query_term = request.form.get('place_name')
