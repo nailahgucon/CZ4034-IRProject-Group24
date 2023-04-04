@@ -10,6 +10,8 @@ import requests
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 
+from sentiment import model_predict
+
 from config.config import *
 
 rsolr = pysolr.Solr(remote_reviews, always_commit=True)
@@ -166,11 +168,16 @@ def crawl_eatery(driver) -> bool:
                 review = container[j].find_element(By.XPATH, ".//p[@class='partial_entry']").text.replace("\n", " ")
                 date_obj = datetime.strptime(date, '%B %Y')
                 date_formatted = date_obj.strftime('%Y-%m-%d')
+
+                # sentiment
+                sentiment = model_predict(review)
+
                 with open(review_file, 'a', encoding="utf-8", newline='') as f:
                     csvWriter = csv.writer(f)
                     csvWriter.writerow([name, category, eStyle,
                                         eStar, date_formatted,
-                                        rating, title, review])
+                                        rating, title, review,
+                                        sentiment])
                     
                 # TODO: add sentiment analysis call function here:
                 # input: review
@@ -249,12 +256,16 @@ def crawl_hotel(driver) -> bool:
                 date = container[j].find_element(By.XPATH, ".//span[@class='teHYY _R Me S4 H3']").text.replace("Date of stay: ","")
                 date_obj = datetime.strptime(date, '%B %Y')
                 date_formatted = date_obj.strftime('%Y-%m-%d')
+
+                # sentiment
+                sentiment = model_predict(review)
             
                 with open(review_file, 'a', encoding="utf-8", newline='') as f:
                     csvWriter = csv.writer(f)
                     csvWriter.writerow([name, category, hStyle,
                                         hClass, date_formatted,
-                                        rating, title, review])
+                                        rating, title, review,
+                                        sentiment])
             except:
                 continue
             
