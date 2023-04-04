@@ -103,17 +103,26 @@ def model_predict(filepath):
       seq_list = pickle.load(fp)
     tokenizer_obj = Tokenizer()
     tokenizer_obj.fit_on_texts(seq_list)
-    df_opiniated = df[df['Sentiment'] == 'opiniated']
-    df_opiniated['Polarity'] = df_opiniated['Review_processed'].apply(predict_polarity, args=(tokenizer_obj, polarity_model))
+    # df_opiniated = df[df['Sentiment'] == 'opiniated']
+    df['Polarity'] = df['Review_processed'].apply(predict_polarity, args=(tokenizer_obj, polarity_model))
 
-    # merge ['neutral', 'opiniated'] with ['positive', 'negative']
-    df_merged = df.merge(df_opiniated, on=['Name', 'Category', 'Style', 'Star', 'Date', 'Rating', 'ReviewTitle', 'Review', 'Review_processed'], how='left')
-    df_merged['Sentiment'] = df_merged.apply(lambda row: row['Sentiment_x'] if row['Sentiment_x']=='neutral' else row['Polarity_y'], axis=1)
-    df_merged = df_merged.drop(columns=['Polarity_y', 'Polarity_x', 'Sentiment_x', 'Sentiment_y'])
-
+    df['Sentiment'] = df.apply(lambda row: row['Sentiment'] if row['Sentiment']=='neutral' else row['Polarity'], axis=1)
+    df = df.drop(columns=['Polarity', 'Review_processed'])
+    df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
+    
     # save file
     filename = filepath.split('/')[-1][:-4]
-    df_merged.to_csv(f'{os.getcwd()}/{filename}_predicted.csv')
+    df.to_csv(f'{os.getcwd()}/{filename}_predicted.csv')
+
+    # # merge ['neutral', 'opiniated'] with ['positive', 'negative']
+    # df_merged = df.merge(df_opiniated, on=['Name', 'Category', 'Style', 'Star', 'Date', 'Rating', 'ReviewTitle', 'Review'], how='left')
+    # df_merged['Sentiment'] = df_merged.apply(lambda row: row['Sentiment_x'] if row['Sentiment_x']=='neutral' else row['Polarity'], axis=1)
+    # df_merged = df_merged.drop(columns=['Polarity', 'Sentiment_x', 'Sentiment_y', 'Review_processed_x', 'Review_processed_y'])
+    # df_merged = df_merged.loc[:, ~df_merged.columns.str.contains('^Unnamed')]
+
+    # # save file
+    # filename = filepath.split('/')[-1][:-4]
+    # df_merged.to_csv(f'{os.getcwd()}/{filename}_predicted.csv')
 
 # each models predictions
 def predict_subjectivity(s, tokenizer, subjectivity_model):
