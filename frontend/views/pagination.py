@@ -1,6 +1,8 @@
-from flask import Blueprint, render_template, request
-import frontend.views.processes as records
 import math
+
+from flask import Blueprint, render_template, request
+
+import frontend.views.processes as records
 from frontend.views.processes import savedQuery
 
 pagination_bp = Blueprint('pagination_bp', __name__, url_prefix='/pagination')

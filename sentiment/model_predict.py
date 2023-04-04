@@ -90,21 +90,16 @@ def model_predict(filepath):
 
     # load models
     modelpath = f'{os.getcwd()}/sentiment/models/'
-    subjectivity_model = keras.models.load_model(f"{modelpath}subject_model.h5")
+    subjectivity_model = keras.models.load_model(f"{modelpath}subjectivity_model.h5")
     polarity_model = keras.models.load_model(f"{modelpath}sentiment_bilstm")
     # spam_model = keras.models.load_model.load(f"{modelpath}spam_lstm.h5")
 
     # predict subjectivity
-    token_data = pd.read_csv(f'{os.getcwd()}/additional_data/token_data.csv')
     tokenizer = Tokenizer(num_words=50000, oov_token='<OOV>')
-    tokenizer.fit_on_texts(token_data)
-
-    lb = LabelBinarizer()
-    lb.fit([1,1,1,1,0,1,1,0,1,1,1])
-    df['Sentiment'] = df['Review_processed'].apply(predict_subjectivity, args=(tokenizer, subjectivity_model, lb))
+    df['Sentiment'] = df['Review_processed'].apply(predict_polarity, args=(tokenizer, subjectivity_model))
 
     # predict polarity
-    with open(f'{os.getcwd()}/sentiment/additional_data/seq_list', 'rb') as fp:
+    with open(f'{os.getcwd()}/additional_data/seq_list', 'rb') as fp:
       seq_list = pickle.load(fp)
     tokenizer_obj = Tokenizer()
     tokenizer_obj.fit_on_texts(seq_list)
@@ -130,13 +125,14 @@ def model_predict(filepath):
     # df_merged.to_csv(f'{os.getcwd()}/{filename}_predicted.csv')
 
 # each models predictions
-def predict_subjectivity(s, tokenizer, subjectivity_model, labelbinarizer):
+def predict_subjectivity(s, tokenizer, subjectivity_model):
     seq = tokenizer.texts_to_sequences([' '.join(s)])
     padded = pad_sequences(seq)
-    pred = subjectivity_model.predict(padded, verbose=0)
+    pred = subjectivity_model.predict(padded)
 
     # Get the label name back
-    result = labelbinarizer.inverse_transform(pred)[0]
+    lb = LabelBinarizer()
+    result = lb.inverse_transform(pred)[0]
     if result==0: return "neutral" 
     else: return "opiniated"
    

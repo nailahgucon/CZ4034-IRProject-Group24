@@ -1,45 +1,17 @@
-import json
-import math
-import re
-from flask import Blueprint, render_template, request
-from frontend.views.processes import savedQuery, spellcheck, records
-# from frontend.views.processes.records as records
-import requests
-from frontend.views.processes import plot
-import pickle
-
 import io
-from flask import Response
+import math
+import pickle
+import re
+
+import requests
+from flask import Blueprint, Response, render_template, request
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 
-server_main:str = "http://localhost:8983/solr/reviews/select"
-server_sub:str = "http://localhost:8983/solr/all_data/select"
-# proximity search
-# http://localhost:8983/solr/reviews/select?q=Review:%22lovely%20food%22~10
-# http://localhost:8983/solr/reviews/select?q=ReviewTitle:%22Good%20service%20dessert%22~10
-# http://localhost:8983/solr/reviews/select?q=ReviewTitle:%22Good%20service%22%20dessert
+from config.config import *
+from frontend.views.processes import plot, records, savedQuery, spellcheck
 
-# boosting terms
-# http://localhost:8983/solr/reviews/select?q=Review:%22lovely%20food%22^4%20ambience
-
-
-# TODO clean up code
-
-
-NEAR_WORDS = ["near", "nearer", "close", "around"]
-
-CAT_EATERY = ['eateries', 'eatery', 'eat']
-CAT_HOTEL = ['hotel', 'hotels', 'stay']
-
-FILTER_WORDS_TOP = ["best", "top", "popular", "high", "highest"]
-FILTER_WORDS_BOT = ["worst", "worse", "least", "bad", "bottom"]
-
-WORDS = NEAR_WORDS+CAT_EATERY+CAT_HOTEL+FILTER_WORDS_TOP+FILTER_WORDS_BOT
-
-defaultURL = "http://localhost:8983/solr/reviews/select?facet.field={!key=distinctStyle}distinctStyle&facet=on&rows=10000&wt=json&json.facet={distinctStyle:{type:terms,field:distinctStyle,limit:10000,missing:false,sort:{index:asc},facet:{}}}"
 
 query_bp = Blueprint('query_bp', __name__, url_prefix='/query')
-
 
 @query_bp.route('/<page_name>', methods=['GET', 'POST'])
 def query(page_name):
@@ -83,7 +55,7 @@ def query(page_name):
             user_query = f"Review:{query_term}"
 
             kwargs.update({"q": user_query,},)
-            results = requests.get(defaultURL,
+            results = requests.get(defaultquery,
                                    params=kwargs).json()
             res = results.get("response").get("docs")
             
