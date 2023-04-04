@@ -7,11 +7,9 @@ class records():
 
     @classmethod
     def store(cls, docs):
-      print
-      print("document ", docs[0]["Name"])
+      
       cls.displayDocs = docs
       cls.docs = docs
-      print("save records to displatDocs and docs")
     
     def filterByRating(self, rating):
       result = []
