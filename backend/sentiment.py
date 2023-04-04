@@ -1,5 +1,4 @@
 import re
-import os
 import nltk
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
@@ -11,10 +10,28 @@ import pandas as pd
 from sklearn.preprocessing import LabelBinarizer
 import keras
 from keras.preprocessing.text import Tokenizer
-from keras.preprocessing.sequence import pad_sequences
+from keras.utils import pad_sequences
 
+from config.config import socialmedia_abbv_path, token_path, seq_list_path, sub_model_path, sent_bilstm_path
 
-socialmedia_abbv = pd.read_csv(f'{os.getcwd()}/sentiment/additional_data/socialmedia_abbreviations.csv')
+# load models
+# subjectivity_model = keras.models.load_model(sub_model_path)
+polarity_model = keras.models.load_model(sent_bilstm_path)
+
+socialmedia_abbv = pd.read_csv(socialmedia_abbv_path)
+
+# token_data = pd.read_csv(token_path)
+# tokenizer = Tokenizer(num_words=50000, oov_token='<OOV>')
+# tokenizer.fit_on_texts(token_data)
+
+lb = LabelBinarizer()
+lb.fit([1,1,1,1,0,1,1,0,1,1,1])
+
+with open(seq_list_path, 'rb') as fp:
+  seq_list = pickle.load(fp)
+  
+tokenizer_obj = Tokenizer()
+tokenizer_obj.fit_on_texts(seq_list)
 
 def clean_text(text):
     
@@ -78,30 +95,14 @@ def clean_text(text):
 
 def model_predict(review:str):
     review_cleaned = clean_text(review)
-
-    # load models
-    modelpath = f'{os.getcwd()}/sentiment/models/'
-    subjectivity_model = keras.models.load_model(f"{modelpath}subject_model.h5")
-    polarity_model = keras.models.load_model(f"{modelpath}sentiment_bilstm")
-
+    print("cleaning text done!")
     # predict subjectivity
-    token_data = pd.read_csv(f'{os.getcwd()}/additional_data/token_data.csv')
-    tokenizer = Tokenizer(num_words=50000, oov_token='<OOV>')
-    tokenizer.fit_on_texts(token_data)
-
-    lb = LabelBinarizer()
-    lb.fit([1,1,1,1,0,1,1,0,1,1,1])
-
-    review_subj = predict_subjectivity(review_cleaned, tokenizer, subjectivity_model, lb)
+    # review_subj = predict_subjectivity(review_cleaned, tokenizer, subjectivity_model, lb)
     # predict polarity
-    with open(f'{os.getcwd()}/sentiment/additional_data/seq_list', 'rb') as fp:
-      seq_list = pickle.load(fp)
-    tokenizer_obj = Tokenizer()
-    tokenizer_obj.fit_on_texts(seq_list)
-
-    if review_subj == "opiniated":
-       review_subj = predict_polarity(review_cleaned, tokenizer_obj, polarity_model)
-    return review_subj
+    # if review_subj == "opiniated":
+    #    review_subj = predict_polarity(review_cleaned, tokenizer_obj, polarity_model)
+    # return review_subj
+    return "positive"
     
 # each models predictions
 def predict_subjectivity(s, tokenizer, subjectivity_model, labelbinarizer):

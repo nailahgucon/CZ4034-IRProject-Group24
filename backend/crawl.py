@@ -10,7 +10,7 @@ import requests
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 
-from sentiment import model_predict
+from backend.sentiment import model_predict
 
 from config.config import *
 
@@ -164,12 +164,13 @@ def crawl_eatery(driver) -> bool:
                 title = container[j].find_element(By.XPATH, ".//span[@class='noQuotes']").text
                 date = container[j].find_element(By.XPATH, ".//div[@class='prw_rup prw_reviews_stay_date_hsx']").text.replace("Date of visit: ","")
                 rating = int(container[j].find_element(By.XPATH, ".//span[contains(@class, 'ui_bubble_rating bubble_')]").get_attribute("class").split("_")[3])/10
-                rating = str(rating).rstrip()
+                # rating = str(rating).rstrip()
                 review = container[j].find_element(By.XPATH, ".//p[@class='partial_entry']").text.replace("\n", " ")
                 date_obj = datetime.strptime(date, '%B %Y')
                 date_formatted = date_obj.strftime('%Y-%m-%d')
 
                 # sentiment
+                print(review)
                 sentiment = model_predict(review)
 
                 with open(review_file, 'a', encoding="utf-8", newline='') as f:
@@ -178,12 +179,7 @@ def crawl_eatery(driver) -> bool:
                                         eStar, date_formatted,
                                         rating, title, review,
                                         sentiment])
-                    
-                # TODO: add sentiment analysis call function here:
-                # input: review
-                # TODO: update solr schema for sentiment
-                # TODO: flask actions - if page already exists AND if page does not exist
-                #                       AND print out the process
+                
                 print("Adding to solr core: reviews...")
                 rsolr.add([{
                             "Name":name,
@@ -194,7 +190,7 @@ def crawl_eatery(driver) -> bool:
                             "Rating":rating,
                             "ReviewTitle":title,
                             "Review":review,
-                            # "Sentiment":sentiment,
+                            "Sentiment":sentiment,
                         }])
             except Exception as e:
                 logging.error(e)
@@ -229,7 +225,6 @@ def crawl_hotel(driver) -> bool:
             "Star":hClass,
             "lat":lat,
             "lon":long,
-            # "Sentiment":sentiment,
         }])
     except Exception as e:
         logging.error(e)
@@ -266,6 +261,18 @@ def crawl_hotel(driver) -> bool:
                                         hClass, date_formatted,
                                         rating, title, review,
                                         sentiment])
+                print("Adding to solr core: reviews...")
+                rsolr.add([{
+                            "Name":name,
+                            "Category":category,
+                            "Style":hStyle,
+                            "Star":hClass,
+                            "Date":date_formatted,
+                            "Rating":rating,
+                            "ReviewTitle":title,
+                            "Review":review,
+                            "Sentiment":sentiment,
+                        }])
             except:
                 continue
             

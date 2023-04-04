@@ -39,6 +39,14 @@ FILTER_WORDS_BOT = ["worst", "worse", "least", "bad", "bottom"]
 
 WORDS = NEAR_WORDS+CAT_EATERY+CAT_HOTEL+FILTER_WORDS_TOP+FILTER_WORDS_BOT
 
+MODELS_PATH = 'backend/models'
+MODELS_DATA = f'{MODELS_PATH}/models_data'
+
+socialmedia_abbv_path = f'{MODELS_DATA}/socialmedia_abbreviations.csv'
+token_path = f'{MODELS_DATA}/token_data.csv'
+seq_list_path = f'{MODELS_DATA}/seq_list'
+sub_model_path = f"{MODELS_PATH}/subjectivity_model.h5"
+sent_bilstm_path = f"{MODELS_PATH}/sentiment_bilstm"
 
 defaultURL = "http://localhost:8983/solr/reviews/select?q=%s&facet.field={!key=distinctStyle}distinctStyle&facet=on&rows=10000&wt=json&json.facet={distinctStyle:{type:terms,field:distinctStyle,limit:10000,missing:false,sort:{index:asc},facet:{}}}"
 

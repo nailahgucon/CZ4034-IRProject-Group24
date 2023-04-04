@@ -466,6 +466,7 @@
   <field name="Review" type="text_general" termVectors="true" indexed="true" required="false" stored="true" multiValued="false"/>
   <field name="ReviewTitle" type="text_general" termVectors="true" indexed="true" required="false" stored="true" multiValued="false"/>
   <field name="Star" type="text_general" indexed="true" required="false" stored="true" multiValued="false"/>
+  <field name="Sentiment" type="text_general" indexed="true" required="false" stored="true" multiValued="false"/>
   <field name="_text_" type="text_general" multiValued="true" indexed="false" stored="true"/>
   <field name="_version_" type="plong" indexed="false" stored="false"/>
   <field name="id" type="text_general" multiValued="false" indexed="true" required="true" stored="true"/>
