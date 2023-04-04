@@ -29,7 +29,7 @@ def getAllrecords():
   for i in distinctStyle:
     i["val"] = i["val"].replace("[",'').replace("]",'').replace("'",'')
   myQuery.storeStyle(distinctStyle)
-  print("distinct style ", myQuery.getStyle())
+  # print("distinct style ", myQuery.getStyle())
 
   # save the results to records class, don't change myRecords and totalPages.
   myRecords = records.records()

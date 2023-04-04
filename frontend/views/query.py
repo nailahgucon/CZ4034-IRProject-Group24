@@ -25,14 +25,6 @@ server_sub:str = "http://localhost:8983/solr/all_data/select"
 
 # TODO clean up code
 
-places = requests.get(server_sub, params={
-    "q":"*:*",
-    "rows": "500",
-    "fl": "Name"
-}).json()
-places = places.get("response").get("docs")
-places = [i.get("Name") for i in places]
-
 
 NEAR_WORDS = ["near", "nearer", "close", "around"]
 
@@ -57,6 +49,14 @@ def query(page_name):
         if page_name == "main":
             return render_template('results.html')
         elif page_name == "sub":
+            places = requests.get(
+                server_sub, params={
+                                        "q":"*:*",
+                                        "rows": "500",
+                                        "fl": "Name"
+                                    }).json()
+            places = places.get("response").get("docs")
+            places = [i.get("Name") for i in places]
             return render_template('query.html',
                                    availableTags=places)
         else:

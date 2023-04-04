@@ -107,6 +107,7 @@
         <th>Rating</th>
         <th>ReviewTitle</th>
         <th>Review</th>
+        <th>Sentiment</th>
       </tr>
     </thead>
 
@@ -121,12 +122,22 @@
         <td class="align-middle">{{result.Star[0]}}</td>
         <td class="align-middle">{{result.Date}}</td>
         <td class="align-middle">{{result.Rating[0]}}</td>
-        <td class="align-middle">{{result.ReviewTitle}}</td>
-        <td class="align-middle">{{result.Review}}</td>       
+        <td class="align-middle" >{{result.ReviewTitle}}</td>
+        <td class="align-middle" id="{{'red' if result.Sentiment == 'negative' else 'green'}}">{{result.Review}}</td>
+        <td class="align-middle">{{result.Sentiment}}</td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
+  <style>
+      #red {
+          color: red;
+      }
+
+      #green {
+          color: green;
+      }
+  </style>
 </div>
 <nav aria-label="Page navigation example">
   <ul class="pagination justify-content-end">

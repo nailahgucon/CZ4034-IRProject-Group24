@@ -62,9 +62,6 @@ def filter():
     # type cast the date filter
     start_date_filter = request.values.get('startDate')
     end_date_filter = request.values.get('endDate')
-    print(start_date_filter)
-    print(end_date_filter)
-    print("____-")
     if start_date_filter and end_date_filter:
       if num>0:
         f+=f'&Date:["{start_date_filter}T00:00:00Z" TO "{end_date_filter}T00:00:00Z"]'
