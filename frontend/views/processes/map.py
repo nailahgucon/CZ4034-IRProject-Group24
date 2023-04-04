@@ -14,35 +14,38 @@ def plot(list_places):
         loc_ = i.split(",")
         lat.append(float(loc_[0]))
         lon.append(float(loc_[1]))
-    print(lat[:init_points])
-    print(lon[:init_points])
-    print("---")
     names = [i.get("Name") for i in list_places]
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(10, 10))
     ax.scatter(x=lat[:init_points], y=lon[:init_points])
-
-    points, = ax.plot(lat[0], lon[0])
-
-    ax.set_xlabel('Latitude')
-    fig.subplots_adjust(left=0.25, bottom=0.25)
-
-    axfreq = fig.add_axes([0.25, 0.1, 0.65, 0.03])
-    points_slider = Slider(
-        ax=axfreq,
-        label='Number of points',
-        valmin=3,
-        valmax=10,
-        valinit=init_points,
-    )
-
-    # # The function to be called anytime a slider's value changes
-    def update(val):
-        points.set_xdata(lat[:val])
-        points.set_ydata(lon[:val])
-        # fig.canvas.draw_idle()
+    for i, txt in enumerate(names):
+        ax.annotate(txt, (lat[i], lon[i]))
     
-    points_slider.on_changed(update)
+    plt.title("Scatter plot of 2 nearest places")
+    plt.xlabel("Latitude")
+    plt.ylabel("Longitude")
+
+    # points, = ax.plot(lat[0], lon[0])
+
+    # ax.set_xlabel('Latitude')
+    # fig.subplots_adjust(left=0.25, bottom=0.25)
+
+    # axfreq = fig.add_axes([0.25, 0.1, 0.65, 0.03])
+    # points_slider = Slider(
+    #     ax=axfreq,
+    #     label='Number of points',
+    #     valmin=3,
+    #     valmax=10,
+    #     valinit=init_points,
+    # )
+
+    # # # The function to be called anytime a slider's value changes
+    # def update(val):
+    #     points.set_xdata(lat[:val])
+    #     points.set_ydata(lon[:val])
+    #     # fig.canvas.draw_idle()
+    
+    # points_slider.on_changed(update)
 
     # plt.savefig('books_read.png')
     pickle.dump(fig, open('frontend/views/plots/dist.fig.pickle', 'wb'))

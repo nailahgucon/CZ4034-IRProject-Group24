@@ -4,15 +4,10 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
   <h1>Results</h1>
   
-  {% if spellSuggestions %}
+  {% if suggtexts %}
   <form id="spellCorrection" action="{{ url_for('query_bp.query', page_name='main') }}" method="POST">
     <input type="hidden" name="place_name" >
-    <span>Do you want to seach 
-      {% for i in spellSuggestions %}
-        <a href="#" onclick="submit('{{i}}')">{{ i }}</a>
-      {% endfor %}
-      instead?
-    </span>
+    <span>Do you want to seach <a onclick="submit()">{{ suggtexts }}</a> instead?</span>
   </form>
   {% endif %}
 
@@ -107,6 +102,7 @@
         <th>Rating</th>
         <th>ReviewTitle</th>
         <th>Review</th>
+        <th>Sentiment</th>
       </tr>
     </thead>
 
@@ -121,12 +117,22 @@
         <td class="align-middle">{{result.Star[0]}}</td>
         <td class="align-middle">{{result.Date}}</td>
         <td class="align-middle">{{result.Rating[0]}}</td>
-        <td class="align-middle">{{result.ReviewTitle}}</td>
-        <td class="align-middle">{{result.Review}}</td>       
+        <td class="align-middle" >{{result.ReviewTitle}}</td>
+        <td class="align-middle" id="{{'red' if result.Sentiment == 'negative' else 'green'}}">{{result.Review}}</td>
+        <td class="align-middle">{{result.Sentiment}}</td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
+  <style>
+      #red {
+          color: red;
+      }
+
+      #green {
+          color: green;
+      }
+  </style>
 </div>
 <nav aria-label="Page navigation example">
   <ul class="pagination justify-content-end">
@@ -193,9 +199,25 @@
     window.location.href = "/pagination?page=1";
   }
 
-  function submit(input){
-    document.getElementById("content").value=input;
+  function submit(){
+    document.getElementById("spellCorrection").submit();
   }
+
+  document.querySelector('filter').addEventListener('submit', (event) => {
+    const startDate = document.querySelector('startDate').value;
+    const endDate = document.querySelector('endDate').value;
+    const style = document.querySelector('style').value;
+    const category = document.querySelector('category').value;
+    const star = document.querySelector('star').value;
+    const rating = document.querySelector('rating').value;
+    // do something with the user input, such as sending an AJAX request to the server
+    document.querySelector('startDate').value = startDate;
+    document.querySelector('endDate').value = endDate;
+    document.querySelector('style').value = style;
+    document.querySelector('category').value = category;
+    document.querySelector('star').value = star;
+    document.querySelector('rating').value = rating;
+  });
 
 </script>
 

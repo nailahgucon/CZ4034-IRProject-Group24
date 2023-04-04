@@ -52,6 +52,7 @@
                             <th>Review title</th>
                             <th>Review</th>
                             <th>Rating</th>
+                            <th>Sentiment</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -59,12 +60,23 @@
                             <tr>
                             <td>{{ res['Date'] }}</td>
                             <td>{{ res['ReviewTitle'] }}</td>
-                            <td>{{ res['Review'] }}</td>
+                            <td class="{{'red' if res['Sentiment'] == 'negative' else 'green'}}">{{ res['Review'] }}</td>
                             <td>{{ res['Rating'] }}</td>
+                            <td>{{ res['Sentiment'] }}</td>
+                            
                             </tr>
                         {% endfor %}
                         </tbody>
                     </table>
+                    <style>
+                        .red {
+                            color: red;
+                        }
+
+                        .green {
+                            color: green;
+                        }
+                    </style>
                 </p>
             </div>
         </div>
