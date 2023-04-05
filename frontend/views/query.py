@@ -1,48 +1,16 @@
+import io
 import json
 import math
+import pickle
 import re
-from flask import Blueprint, render_template, request
-from frontend.views.processes import savedQuery, spellcheck, records
+
 # from frontend.views.processes.records as records
 import requests
-from frontend.views.processes import plot
-import pickle
-
-import io
-from flask import Response
+from flask import Blueprint, Response, render_template, request
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 
-server_main:str = "http://localhost:8983/solr/reviews/select"
-server_sub:str = "http://localhost:8983/solr/all_data/select"
-# proximity search
-# http://localhost:8983/solr/reviews/select?q=Review:%22lovely%20food%22~10
-# http://localhost:8983/solr/reviews/select?q=ReviewTitle:%22Good%20service%20dessert%22~10
-# http://localhost:8983/solr/reviews/select?q=ReviewTitle:%22Good%20service%22%20dessert
-
-# boosting terms
-# http://localhost:8983/solr/reviews/select?q=Review:%22lovely%20food%22^4%20ambience
-
-
-# TODO clean up code
-
-places = requests.get(server_sub, params={
-    "q":"*:*",
-    "rows": "500",
-    "fl": "Name"
-}).json()
-places = places.get("response").get("docs")
-places = [i.get("Name") for i in places]
-
-
-NEAR_WORDS = ["near", "nearer", "close", "around"]
-
-CAT_EATERY = ['eateries', 'eatery', 'eat']
-CAT_HOTEL = ['hotel', 'hotels', 'stay']
-
-FILTER_WORDS_TOP = ["best", "top", "popular", "high", "highest"]
-FILTER_WORDS_BOT = ["worst", "worse", "least", "bad", "bottom"]
-
-WORDS = NEAR_WORDS+CAT_EATERY+CAT_HOTEL+FILTER_WORDS_TOP+FILTER_WORDS_BOT
+from frontend.views.processes import plot, records, savedQuery, spellcheck
+from config.config import *
 
 defaultURL = "http://localhost:8983/solr/reviews/select?facet.field={!key=distinctStyle}distinctStyle&facet=on&rows=10000&wt=json&json.facet={distinctStyle:{type:terms,field:distinctStyle,limit:10000,missing:false,sort:{index:asc},facet:{}}}"
 
@@ -51,12 +19,19 @@ query_bp = Blueprint('query_bp', __name__, url_prefix='/query')
 
 @query_bp.route('/<page_name>', methods=['GET', 'POST'])
 def query(page_name):
-
+    global places
     # Search page
     if request.method == 'GET':
         if page_name == "main":
             return render_template('results.html')
         elif page_name == "sub":
+            places = requests.get(server_sub,
+                                    params={"q":"*:*",
+                                            "rows": "500",
+                                            "fl": "Name"
+                                            }).json()
+            places = places.get("response").get("docs")
+            places = [i.get("Name") for i in places]
             return render_template('query.html',
                                    availableTags=places)
         else:
@@ -176,8 +151,10 @@ def query(page_name):
                 spellcheck_list = results.get("spellcheck").get("collations")
                 if spellcheck_list:
                     correct_terms, typo_terms, collation_queries = spellcheck(spellcheck_list)
-                    return render_template('queried.html',
-                                        typos=collation_queries)
+                    return render_template('query.html',
+                                            typos=collation_queries,
+                                            availableTags=places)
+
                 else:
                     return render_template('404.html')
             # ------------------------
@@ -238,8 +215,10 @@ def query(page_name):
                     
                     res = res2.get("response").get("docs")
                 
-                return render_template('query_results.html',
-                                       place_list=names, other_matches=names2)
+                return render_template('query.html',
+                                       place_list=names,
+                                       other_matches=names2,
+                                       availableTags=places)
             return "Uh oh, could not find any results, please try again."
         else:
             return render_template('404.html')
