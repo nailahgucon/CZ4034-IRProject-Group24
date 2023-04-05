@@ -1,18 +1,21 @@
-import re
-import nltk
-from nltk.tokenize import word_tokenize
-from nltk.stem import WordNetLemmatizer
 import pickle
+import re
+
+import nltk
+from nltk.stem import WordNetLemmatizer
+from nltk.tokenize import word_tokenize
+
 nltk.download('punkt')
 nltk.download('wordnet')
 
-import pandas as pd
-from sklearn.preprocessing import LabelBinarizer
 import keras
+import pandas as pd
 from keras.preprocessing.text import Tokenizer
 from keras.utils import pad_sequences
+from sklearn.preprocessing import LabelBinarizer
 
-from config.config import socialmedia_abbv_path, token_path, seq_list_path, sub_model_path, sent_bilstm_path
+from config.config import (sent_bilstm_path, seq_list_path,
+                           socialmedia_abbv_path, sub_model_path, token_path)
 
 # load models
 subjectivity_model = keras.models.load_model(sub_model_path)

@@ -8,6 +8,8 @@ all_data_file = "backend/data/all_data.csv"
 remote_reviews = 'http://localhost:8983/solr/reviews'
 remote_data = 'http://localhost:8983/solr/all_data'
 
+
+
 server_sub = f"{remote_data}/select"
 server_main = f"{remote_reviews}/select"
 
@@ -48,7 +50,3 @@ token_path = f'{MODELS_DATA}/token_data.csv'
 seq_list_path = f'{MODELS_DATA}/seq_list'
 sub_model_path = f"{MODELS_PATH}/subject_model.h5"
 sent_bilstm_path = f"{MODELS_PATH}/sentiment_bilstm"
-
-defaultURL = "http://localhost:8983/solr/reviews/select?q=%s&facet.field={!key=distinctStyle}distinctStyle&facet=on&rows=10000&wt=json&json.facet={distinctStyle:{type:terms,field:distinctStyle,limit:10000,missing:false,sort:{index:asc},facet:{}}}"
-
-defaultquery = "http://localhost:8983/solr/reviews/select?facet.field={!key=distinctStyle}distinctStyle&facet=on&rows=10000&wt=json&json.facet={distinctStyle:{type:terms,field:distinctStyle,limit:10000,missing:false,sort:{index:asc},facet:{}}}"

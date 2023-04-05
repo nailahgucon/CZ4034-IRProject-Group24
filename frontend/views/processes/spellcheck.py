@@ -6,8 +6,6 @@ def spellcheck(res) -> Tuple[bool, str, str]:
     if there was a typo in query
     res: dictionary response 
     '''
-    # TODO error spellchecking on multiple words
-    # TODO error spellchecking on long terms
     correct_terms = []
     typo_terms = []
     collation_queries = []

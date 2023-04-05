@@ -11,7 +11,6 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 
 from backend.sentiment import model_predict
-
 from config.config import *
 
 rsolr = pysolr.Solr(remote_reviews, always_commit=True)
@@ -170,7 +169,6 @@ def crawl_eatery(driver) -> bool:
                 date_formatted = date_obj.strftime('%Y-%m-%d')
 
                 # sentiment
-                print(review)
                 sentiment = model_predict(review)
 
                 with open(review_file, 'a', encoding="utf-8", newline='') as f:
