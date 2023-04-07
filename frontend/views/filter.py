@@ -32,7 +32,7 @@ def filter():
     category_filter = request.values.get('category')
     if category_filter:
       if num>0:
-         f+=f"&Category:{category_filter}"
+         f+=f" AND Category:{category_filter}"
       else:
         f+=f"Category:{category_filter}"
       num+=1
@@ -43,7 +43,7 @@ def filter():
     if star_filter:
       formatted_star = int(star_filter[0])
       if num>0:
-         f+=f"&Star:{formatted_star}"
+         f+=f" AND Star:{formatted_star}"
       else:
         f+=f"Star:{formatted_star}"
       num+=1
@@ -54,7 +54,7 @@ def filter():
     if rating_filter:
       formatted_rating = int(rating_filter[0])
       if num>0:
-        f+=f"&Rating:{formatted_rating}"
+        f+=f" AND Rating:{formatted_rating}"
       else:
         f+=f"Rating:{formatted_rating}"
       num+=1
@@ -64,13 +64,17 @@ def filter():
     end_date_filter = request.values.get('endDate')
     if start_date_filter and end_date_filter:
       if num>0:
-        f+=f'&Date:["{start_date_filter}T00:00:00Z" TO "{end_date_filter}T00:00:00Z"]'
+        f+=f' AND Date:["{start_date_filter}T00:00:00Z" TO "{end_date_filter}T00:00:00Z"]'
       else:
         f+=f'Date:["{start_date_filter}T00:00:00Z" TO "{end_date_filter}T00:00:00Z"]'    
       num+=1
 
-
-    URL = defaultURL%(myQuery.getQuery()+f)
+    if num == 0:
+      URL = defaultURL%(myQuery.getQuery())
+    else: 
+      f = myQuery.getQuery()+f
+      print("filter ", f)
+      URL = defaultURL%(f)
 
     # print("URL ", URL)
     # Send Solr query
@@ -81,9 +85,14 @@ def filter():
     if rawData["response"]["numFound"] != 0:
       results = rawData["response"]["docs"]
       distinctStyle = rawData["facets"]["distinctStyle"]["buckets"]
+      temp_distinctStyle = []
       for i in distinctStyle:
-        i["val"] = i["val"].replace("[",'').replace("]",'').replace("'",'')
-      myQuery.storeStyle(distinctStyle)
+          temp = i["val"].split("|")
+          for x in temp:
+              temp_distinctStyle.append(x.split(","))
+      for i in temp_distinctStyle:
+          print(i)
+      myQuery.storeStyle(temp_distinctStyle)
 
       # save the results to records class
       myRecords.store(results)
@@ -95,6 +104,6 @@ def filter():
     totalPages = int(math.ceil(rawData["response"]["numFound"] / 10))
     displayResult = results[0:10]
 
-    return render_template('results.html', docs = displayResult, distinctStyle=distinctStyle, current_page=1, total_pages=totalPages)
+    return render_template('results.html', docs = displayResult, distinctStyle=temp_distinctStyle, current_page=1, total_pages=totalPages)
   else:
     return render_template('home.html')

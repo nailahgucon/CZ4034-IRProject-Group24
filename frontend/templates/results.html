@@ -4,10 +4,15 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
   <h1>Results</h1>
   
-  {% if suggtexts %}
+  {% if spellSuggestions %}
   <form id="spellCorrection" action="{{ url_for('query_bp.query', page_name='main') }}" method="POST">
     <input type="hidden" name="place_name" >
-    <span>Do you want to seach <a onclick="submit()">{{ suggtexts }}</a> instead?</span>
+    <span>Do you want to seach 
+      {% for i in spellSuggestions %}
+        <a href="#" onclick="submit('{{i}}')">{{ i }}</a>
+      {% endfor %}
+      instead?
+    </span>
   </form>
   {% endif %}
 
@@ -35,7 +40,7 @@
       <select id="style" name="style" class="form-select">
         <option value="">Select a rating</option>
         {% for i in distinctStyle %}
-          <option value={{i["val"]}}>{{i["val"]}}</option>
+          <option value={{i[0]}}>{{i[0]}}</option>
         {% endfor %}
       </select>
       <br><br>
@@ -199,8 +204,8 @@
     window.location.href = "/pagination?page=1";
   }
 
-  function submit(){
-    document.getElementById("spellCorrection").submit();
+  function submit(input){
+    document.getElementById("content").value=input;
   }
 
   document.querySelector('filter').addEventListener('submit', (event) => {
