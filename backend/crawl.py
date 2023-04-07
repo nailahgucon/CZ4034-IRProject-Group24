@@ -16,7 +16,6 @@ from config.config import *
 rsolr = pysolr.Solr(remote_reviews, always_commit=True)
 dsolr = pysolr.Solr(remote_data, always_commit=True)
 
-map_client = googlemaps.Client(API_KEY)
 
 # Open the file to save the review
 if not os.path.exists(review_file):
@@ -54,6 +53,7 @@ def append_coord(name:str):
     output a new row with coordinates
     appended.
     '''
+    map_client = googlemaps.Client(API_KEY)
     address = map_client.geocode(name)
     if address:
         coordinates = address[0]['geometry'].get("location")
