@@ -1,15 +1,10 @@
-import io
-import json
 import math
-import pickle
 import re
 
-# from frontend.views.processes.records as records
 import requests
 from flask import Blueprint, Response, render_template, request
-from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 
-from frontend.views.processes import plot, records, savedQuery, spellcheck
+from frontend.views.processes import records, savedQuery, spellcheck
 from config.config import *
 
 defaultURL = "http://localhost:8983/solr/reviews/select?facet.field={!key=distinctStyle}distinctStyle&facet=on&rows=10000&wt=json&json.facet={distinctStyle:{type:terms,field:distinctStyle,limit:10000,missing:false,sort:{index:asc},facet:{}}}"
@@ -140,7 +135,7 @@ def query(page_name):
                 else:
                     user_query = f"spellCheck:\"{new_query}\""
             kwargs.update({"q": user_query,
-                           "sort": sort_field},
+                           "sort": sort_field,},
                          )
             results = requests.get(server_sub,
                                    params=kwargs).json()
@@ -152,6 +147,7 @@ def query(page_name):
                 # no match
             res = results.get("response").get("docs")
             if len(res) == 0:
+                print(res)
                 spellcheck_list = results.get("spellcheck").get("collations")
                 if spellcheck_list:
                     correct_terms, typo_terms, collation_queries = spellcheck(spellcheck_list)
@@ -283,16 +279,15 @@ def place(name: str):
                             params=kwargs).json()
     
     res2 = res2.get("response").get("docs")
-    plot(res2)
+    names = [i.get("Name") for i in res2]
+    loc = [i.get("location") for i in res2]
+    locations = []
+    for i in loc:
+        loc_ = i.split(",")
+        data = {"x": float(loc_[0]), "y": float(loc_[1])}
+        locations.append(data)
     
     return render_template("place.html", results_main=results_main[0],
                            results_reviews=results_reviews,
-                           results_mlt=results_mlt)
+                           results_mlt=results_mlt, locations=locations, attr=names)
 
-@query_bp.route('/plot_png')
-def plot_png():
-    figx = pickle.load(open('frontend/views/plots/dist.fig.pickle', 'rb'))
-    output = io.BytesIO()
-
-    FigureCanvas(figx).print_png(output)
-    return Response(output.getvalue(), mimetype='image/png')

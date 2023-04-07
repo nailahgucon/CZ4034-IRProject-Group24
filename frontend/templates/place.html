@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 
+
 {% block content %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
     <div class="place-details">
         <h1>{{ results_main['Name'] }}</h1>
     </div>
@@ -89,7 +91,61 @@
             </div>
             <div class="side-by-side-info">
                 <p class="info">
-                    <img src= {{url_for('query_bp.plot_png' )}} alt="my plot">
+                    <canvas id="myChart" width="400" height="200"></canvas>
+                    <script type="text/javascript">
+                        ctx = document.getElementById("myChart").getContext("2d");
+                        const xyValues = {{ locations|safe }};
+                        const starting = xyValues.slice(0, 3);
+                        const names = {{ attr|safe }};
+                        const startnames = names.slice(0, 3);
+                        const pRadius = [20, 10, 10, 10, 10, 10, 10, 10, 10, 10];
+                        const startRadius = pRadius.slice(0, 3);
+
+                        let data = {
+                            datasets: [{
+                                label: "Legend",
+                                labels: startnames,
+                                data: starting,
+                                backgroundColor: "rgb(255, 99, 132)",
+                                pointRadius: startRadius,
+                            },]
+                        }
+
+                        let options = {
+                            plugins: {
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(ctx) {
+                                            // console.log(ctx);
+                                            let label = ctx.dataset.labels[ctx.dataIndex];
+                                            label += " (" + ctx.parsed.x + ", " + ctx.parsed.y + ")";
+                                            return label;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        scatterChart = new Chart(ctx, {
+                            type: "scatter",
+                            data: data,
+                            options: options
+                        });
+
+
+                        function addData() {
+                            const added_names = names.slice(0, 10);
+                            const added_places = xyValues.slice(0, 10);
+                            const added_pRadius = pRadius.slice(0, 10);
+                            scatterChart.data.datasets[0].labels = added_names;
+                            scatterChart.data.datasets[0].data = added_places;
+                            scatterChart.data.datasets[0].pointRadius = added_pRadius;
+                            scatterChart.update();
+                        }
+                    </script>
+                    <div class="col-md-10">
+                        <button type="button" class="btn btn-success btn-md" onclick="addData();">See more places </button>
+                    </div>
                 </p>
             </div>
         </div>
