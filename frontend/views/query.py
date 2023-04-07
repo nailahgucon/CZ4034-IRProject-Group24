@@ -282,18 +282,8 @@ def place(name: str):
         loc_ = i.split(",")
         data = {"x": float(loc_[0]), "y": float(loc_[1])}
         locations.append(data)
-
-    # plot(res2)
-    # print(names)
     
     return render_template("place.html", results_main=results_main[0],
                            results_reviews=results_reviews,
                            results_mlt=results_mlt, locations=locations, attr=names)
 
-# @query_bp.route('/plot_png')
-# def plot_png():
-#     figx = pickle.load(open('frontend/views/plots/dist.fig.pickle', 'rb'))
-#     output = io.BytesIO()
-
-#     FigureCanvas(figx).print_png(output)
-#     return Response(output.getvalue(), mimetype='image/png')
