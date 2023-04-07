@@ -200,7 +200,7 @@ def crawl_hotel(driver) -> bool:
     # get hotel name, hotel class, hotel style
     try:
         print("Adding hotel information...")
-        name = driver.find_element(By.XPATH, "//h1[@class='QdLfr b d Pn']").text
+        name = driver.find_element(By.XPATH, "//h1[@class='biGQs _P rRtyp']").text
         hClass = driver.find_element(By.XPATH, "//*[name()='svg' and @class='JXZuC d H0']").get_attribute("aria-label").split()[0]
         hStyle_all = [my_elem.text for my_elem in driver.find_elements(By.XPATH, "//div[@class='euDRl _R MC S4 _a H']")]
         if "" in hStyle_all:
