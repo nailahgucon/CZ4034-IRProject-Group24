@@ -49,4 +49,4 @@ socialmedia_abbv_path = f'{MODELS_DATA}/socialmedia_abbreviations.csv'
 token_path = f'{MODELS_DATA}/token_data.csv'
 seq_list_path = f'{MODELS_DATA}/seq_list'
 sub_model_path = f"{MODELS_PATH}/subject_model.h5"
-sent_bilstm_path = f"{MODELS_PATH}/sentiment_bilstm"
+sent_bilstm_path = f"{MODELS_PATH}/sentiment_bilstm.h5"
